@@ -1,5 +1,5 @@
-namespace Service_Desk { //aus Mitarbeiterbereich
-    public class Program  //Test 11:47
+namespace Service_Desk {
+    public class Program  
     {
         public static void Main(string[] args)
         {
