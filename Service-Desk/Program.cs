@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using Service_Desk.Models;
+
 namespace Service_Desk
 {
     public class Program
@@ -6,6 +9,9 @@ namespace Service_Desk
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddDbContext<ServiceDeskContext> (opts =>
+            opts.UseSqlServer(builder.Configuration.GetConnectionString("DeskData")
+            ));
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
