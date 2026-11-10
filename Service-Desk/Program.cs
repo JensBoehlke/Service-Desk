@@ -1,4 +1,3 @@
-namespace Service_Desk // Test
 {
     public class Program
     {
