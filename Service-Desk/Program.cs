@@ -1,5 +1,5 @@
-{
-    public class Program
+namespace Service_Desk { 
+    public class Program 
     {
         public static void Main(string[] args)
         {
