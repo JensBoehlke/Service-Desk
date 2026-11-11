@@ -7,6 +7,11 @@ namespace Service_Desk.Models
         [Key]
         public int TicketId { get; set; }
 
+        [Required(ErrorMessage = "Bitte Ihre Name angeben.")]
+        [Display(Name = "Erstellt Von:")]
+        [StringLength(50)]
+        public string ErstelltVon { get; set; } = string.Empty;
+
         [Required(ErrorMessage = "Bitte einen Titel angeben.")]
         [StringLength(100)]
         public string Titel { get; set; } = string.Empty;
@@ -14,6 +19,10 @@ namespace Service_Desk.Models
         [Required(ErrorMessage = "Bitte eine Beschreibung angeben.")]
         [StringLength(2000)]
         public string Beschreibung { get; set; } = string.Empty;
+
+        [Display(Name = "Erstellungsdatum")]
+        [DataType(DataType.DateTime)]
+        public DateTime Erstellungsdatum { get; set; } = DateTime.Now;
 
         public Kategorie Kategorie { get; set; } = Kategorie.Hardware;
 
