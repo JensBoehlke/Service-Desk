@@ -1,0 +1,66 @@
+@model IEnumerable<Service_Desk.Models.Ticket>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.ErstelltVon)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Titel)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Beschreibung)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Erstellungsdatum)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Kategorie)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Status)
+            </th>
+            <th><th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(model => item.ErstelltVon)
+            </td>
+
+            <td>
+                @Html.DisplayFor(model => item.Titel)
+            </td>
+
+            <td>
+                @Html.DisplayFor(model => item.Beschreibung)
+            </td>
+            
+            <td>
+                @Html.DisplayFor(model => item.Erstellungsdatum)
+            </td>
+            
+            <td>
+                @Html.DisplayFor(model => item.Kategorie)
+            </td>
+
+            <td>
+                @Html.DisplayFor(model => item.Status)
+            </td>
+
+        </tr>
+}
+    </tbody>
+</table>
