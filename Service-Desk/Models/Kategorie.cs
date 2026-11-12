@@ -10,6 +10,8 @@ namespace Service_Desk.Models
 
         [Required(ErrorMessage = "Bitte eine Kategorie angeben.")]
         [StringLength(50)]
+
+        [Display(Name = "Kategorie Name")]
         public string KategorieName { get; set; } = string.Empty;
 
         public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();

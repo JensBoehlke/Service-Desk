@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Service_Desk.Models;
 
-public class KategoriesController : Controller
+public class KategorieController : Controller
 {
     private readonly ServiceDeskContext _context;
 
-    public KategoriesController(ServiceDeskContext context)
+    public KategorieController(ServiceDeskContext context)
     {
         _context = context;
     }

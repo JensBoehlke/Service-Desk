@@ -15,6 +15,7 @@ public class IT_MitarbeiterController : Controller
     // GET: IT_MITARBEITERS
     public async Task<IActionResult> Index()    
     {
+        ViewBag.Kategorien = await _context.Kategorie.ToListAsync();
         return View(await _context.Mitarbeiter.ToListAsync());
     }
 

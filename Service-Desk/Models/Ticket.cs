@@ -8,7 +8,7 @@ namespace Service_Desk.Models
         public int TicketId { get; set; }
 
         [Required(ErrorMessage = "Bitte Ihre Name angeben.")]
-        [Display(Name = "Erstellt Von:")]
+        [Display(Name = "Erstellt Von")]
         [StringLength(50)]
         public string ErstelltVon { get; set; } = string.Empty;
 
