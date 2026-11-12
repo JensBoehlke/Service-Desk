@@ -1,0 +1,116 @@
+@model IEnumerable<Service_Desk.Models.Ticket>
+
+@{
+    ViewData["Title"] = "Support – Tickets";
+    var selectedStatus = Context.Request.Query["status"].ToString();
+    var selectedPrioritaet = Context.Request.Query["prioritaet"].ToString();
+}
+
+<h1>Support – Tickets</h1>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="mb-0">Alle Tickets verwalten, bearbeiten oder erneut öffnen.</p>
+    <a asp-action="Create" class="btn btn-primary">Neues Ticket</a>
+</div>
+
+<form method="get" class="row g-3 mb-4">
+    <div class="col-md-3">
+        <label for="status" class="form-label">Status</label>
+        <select id="status" name="status" class="form-select">
+            <option value="">Alle Status</option>
+            @foreach (var value in Enum.GetValues<TicketStatus>())
+            {
+                if (selectedStatus == value.ToString())
+                {
+                    <option value="@value" selected>@value</option>
+                }
+                else
+                {
+                    <option value="@value">@value</option>
+                }
+            }
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label for="prioritaet" class="form-label">Priorität</label>
+        <select id="prioritaet" name="prioritaet" class="form-select">
+            <option value="">Alle Prioritäten</option>
+            @foreach (var value in Enum.GetValues<Prioritaet>())
+            {
+                if (selectedPrioritaet == value.ToString())
+                {
+                    <option value="@value" selected>@value</option>
+                }
+                else
+                {
+                    <option value="@value">@value</option>
+                }
+            }
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label for="kategorie" class="form-label">Kategorie</label>
+        <select id="kategorie" name="kategorie" asp-items="ViewBag.KategorieId" class="form-select">
+            <option value="">Alle Kategorien</option>
+        </select>
+    </div>
+    <div class="col-md-3 d-flex align-items-end gap-2">
+        <button type="submit" class="btn btn-secondary">Filtern</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Zurücksetzen</a>
+    </div>
+</form>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Zu dieser Auswahl wurden keine Tickets gefunden.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Nr.</th>
+                    <th>Titel</th>
+                    <th>Erstellt von</th>
+                    <th>Kategorie</th>
+                    <th>Priorität</th>
+                    <th>Status</th>
+                    <th>Bearbeiter</th>
+                    <th>Erstellt am</th>
+                    <th>Aktionen</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ticket in Model)
+                {
+                    <tr>
+                        <td>@ticket.TicketId</td>
+                        <td>@ticket.Titel</td>
+                        <td>@ticket.ErstelltVon</td>
+                        <td>@(ticket.Kategorie?.KategorieName ?? "Keine Kategorie")</td>
+                        <td>@ticket.Prioritaet</td>
+                        <td>@ticket.Status</td>
+                        <td>@(ticket.Mitarbeiter?.Name ?? "Nicht zugewiesen")</td>
+                        <td>@ticket.Erstellungsdatum.ToString("dd.MM.yyyy HH:mm")</td>
+                        <td>
+                            <div class="d-flex flex-wrap gap-1">
+                                <a asp-action="Details" asp-route-id="@ticket.TicketId" class="btn btn-sm btn-outline-secondary">Details</a>
+                                <a asp-action="Edit" asp-route-id="@ticket.TicketId" class="btn btn-sm btn-outline-primary">Bearbeiten</a>
+                                <a asp-action="Delete" asp-route-id="@ticket.TicketId" class="btn btn-sm btn-outline-danger">Löschen</a>
+                                @if (ticket.Status == TicketStatus.Abgeschlossen)
+                                {
+                                    <form asp-action="Reopen" asp-route-id="@ticket.TicketId" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-success">Wieder öffnen</button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+

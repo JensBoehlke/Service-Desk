@@ -1,0 +1,74 @@
+@model Service_Desk.Models.Ticket
+
+@{
+    ViewData["Title"] = "Ticket bearbeiten";
+}
+
+<h1>Ticket #@Model.TicketId bearbeiten</h1>
+
+<div class="row">
+    <div class="col-md-7 col-lg-6">
+        <form asp-action="Edit" asp-route-id="@Model.TicketId" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="mb-3">
+                <label asp-for="ErstelltVon" class="form-label"></label>
+                <input asp-for="ErstelltVon" class="form-control" />
+                <span asp-validation-for="ErstelltVon" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Titel" class="form-label"></label>
+                <input asp-for="Titel" class="form-control" />
+                <span asp-validation-for="Titel" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Beschreibung" class="form-label"></label>
+                <textarea asp-for="Beschreibung" class="form-control" rows="6"></textarea>
+                <span asp-validation-for="Beschreibung" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Erstellt am</label>
+                <input value="@Model.Erstellungsdatum.ToString("dd.MM.yyyy HH:mm")" class="form-control" readonly />
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="KategorieId" class="form-label"></label>
+                    <select asp-for="KategorieId" asp-items="ViewBag.KategorieId" class="form-select">
+                        <option value="">Keine Kategorie</option>
+                    </select>
+                    <span asp-validation-for="KategorieId" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Prioritaet" class="form-label"></label>
+                    <select asp-for="Prioritaet" asp-items="Html.GetEnumSelectList<Prioritaet>()" class="form-select"></select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Status" class="form-label"></label>
+                    <select asp-for="Status" asp-items="Html.GetEnumSelectList<TicketStatus>()" class="form-select"></select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="MitarbeiterId" class="form-label"></label>
+                    <select asp-for="MitarbeiterId" asp-items="ViewBag.MitarbeiterId" class="form-select">
+                        <option value="">Nicht zugewiesen</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Änderungen speichern</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Abbrechen</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+
