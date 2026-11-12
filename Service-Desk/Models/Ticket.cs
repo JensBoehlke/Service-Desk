@@ -8,7 +8,7 @@ namespace Service_Desk.Models
         public int TicketId { get; set; }
 
         [Required(ErrorMessage = "Bitte Ihre Name angeben.")]
-        [Display(Name = "Erstellt Von:")]
+        [Display(Name = "Erstellt Von")]
         [StringLength(50)]
         public string ErstelltVon { get; set; } = string.Empty;
 
@@ -24,8 +24,6 @@ namespace Service_Desk.Models
         [DataType(DataType.DateTime)]
         public DateTime Erstellungsdatum { get; set; } = DateTime.Now;
 
-        public Kategorie Kategorie { get; set; } = Kategorie.Hardware;
-
         public Prioritaet Prioritaet { get; set; } = Prioritaet.Mittel;
 
         public TicketStatus Status { get; set; } = TicketStatus.Offen;
@@ -33,5 +31,10 @@ namespace Service_Desk.Models
         [Display(Name = "Bearbeiter")]
         public int? MitarbeiterId { get; set; }
         public IT_Mitarbeiter? Mitarbeiter { get; set; }
+
+
+        [Display(Name = "Kategorie")]
+        public int? KategorieId { get; set; }
+        public Kategorie? Kategorie { get; set; }
     }
 }

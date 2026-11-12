@@ -17,7 +17,7 @@ namespace Service_Desk.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.14")
+                .HasAnnotation("ProductVersion", "10.0.15")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -38,6 +38,24 @@ namespace Service_Desk.Migrations
                     b.HasKey("MitarbeiterId");
 
                     b.ToTable("Mitarbeiter");
+                });
+
+            modelBuilder.Entity("Service_Desk.Models.Kategorie", b =>
+                {
+                    b.Property<int>("KategorieId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("KategorieId"));
+
+                    b.Property<string>("KategorieName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("KategorieId");
+
+                    b.ToTable("Kategorie");
                 });
 
             modelBuilder.Entity("Service_Desk.Models.Ticket", b =>
@@ -61,7 +79,7 @@ namespace Service_Desk.Migrations
                     b.Property<DateTime>("Erstellungsdatum")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Kategorie")
+                    b.Property<int?>("KategorieId")
                         .HasColumnType("int");
 
                     b.Property<int?>("MitarbeiterId")
@@ -80,6 +98,8 @@ namespace Service_Desk.Migrations
 
                     b.HasKey("TicketId");
 
+                    b.HasIndex("KategorieId");
+
                     b.HasIndex("MitarbeiterId");
 
                     b.ToTable("Tickets");
@@ -87,14 +107,25 @@ namespace Service_Desk.Migrations
 
             modelBuilder.Entity("Service_Desk.Models.Ticket", b =>
                 {
+                    b.HasOne("Service_Desk.Models.Kategorie", "Kategorie")
+                        .WithMany("Tickets")
+                        .HasForeignKey("KategorieId");
+
                     b.HasOne("Service_Desk.Models.IT_Mitarbeiter", "Mitarbeiter")
                         .WithMany("Tickets")
                         .HasForeignKey("MitarbeiterId");
+
+                    b.Navigation("Kategorie");
 
                     b.Navigation("Mitarbeiter");
                 });
 
             modelBuilder.Entity("Service_Desk.Models.IT_Mitarbeiter", b =>
+                {
+                    b.Navigation("Tickets");
+                });
+
+            modelBuilder.Entity("Service_Desk.Models.Kategorie", b =>
                 {
                     b.Navigation("Tickets");
                 });
