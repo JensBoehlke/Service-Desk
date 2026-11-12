@@ -1,0 +1,35 @@
+@model Service_Desk.Models.Ticket
+
+@{
+    ViewData["Title"] = "Ticket löschen";
+}
+
+<h1>Ticket löschen</h1>
+
+<div class="alert alert-warning">
+    Soll das Ticket <strong>#@Model.TicketId – @Model.Titel</strong> wirklich gelöscht werden?
+</div>
+
+<dl class="row">
+    <dt class="col-sm-3">Erstellt von</dt>
+    <dd class="col-sm-9">@Model.ErstelltVon</dd>
+    <dt class="col-sm-3">Beschreibung</dt>
+    <dd class="col-sm-9">@Model.Beschreibung</dd>
+    <dt class="col-sm-3">Kategorie</dt>
+    <dd class="col-sm-9">@Model.Kategorie</dd>
+    <dt class="col-sm-3">Priorität</dt>
+    <dd class="col-sm-9">@Model.Prioritaet</dd>
+    <dt class="col-sm-3">Status</dt>
+    <dd class="col-sm-9">@Model.Status</dd>
+    <dt class="col-sm-3">Bearbeiter</dt>
+    <dd class="col-sm-9">@(Model.Mitarbeiter?.Name ?? "Nicht zugewiesen")</dd>
+    <dt class="col-sm-3">Erstellt am</dt>
+    <dd class="col-sm-9">@Model.Erstellungsdatum.ToString("dd.MM.yyyy HH:mm")</dd>
+</dl>
+
+<form asp-action="Delete" asp-route-id="@Model.TicketId" method="post">
+    <button type="submit" class="btn btn-danger">Endgültig löschen</button>
+    <a asp-action="Index" class="btn btn-outline-secondary">Abbrechen</a>
+</form>
+
+
