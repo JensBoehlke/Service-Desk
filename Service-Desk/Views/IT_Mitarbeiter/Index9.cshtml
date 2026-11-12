@@ -1,0 +1,97 @@
+@model IEnumerable<Service_Desk.Models.IT_Mitarbeiter>
+
+@{
+    ViewData["Title"] = "Index";
+    var kategorien = ViewBag.Kategorien as IEnumerable<Service_Desk.Models.Kategorie>
+                     ?? Enumerable.Empty<Service_Desk.Models.Kategorie>();
+}
+
+<h1>Index</h1>
+
+<div class="row">
+    <!-- Links: Liste der IT-Mitarbeiter -->
+    <div class="col-md-8">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Name)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Tickets)
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+        @foreach (var item in Model) {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(model => item.Name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(model => item.Tickets)
+                    </td>
+                    <td>
+                        <a asp-action="Edit" asp-route-mitarbeiterid="@item.MitarbeiterId">Edit</a> |
+                        <a asp-action="Details" asp-route-mitarbeiterid="@item.MitarbeiterId">Details</a> |
+                        <a asp-action="Delete" asp-route-mitarbeiterid="@item.MitarbeiterId">Delete</a>
+                    </td>
+                </tr>
+        }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Rechts: Create-Formular + Kategorien darunter -->
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Neuer IT-Mitarbeiter</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="form-group mb-3">
+                        <label for="Name" class="control-label">Name</label>
+                        <input type="text" id="Name" name="Name" class="form-control" maxlength="50" required />
+                    </div>
+
+                    <div class="form-group">
+                        <input type="submit" value="Create" class="btn btn-primary" />
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Kategorien (Inhalt von Views/Kategorie/Index.cshtml) -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Kategorien</h5>
+                <a asp-controller="Kategorie" asp-action="Index" class="small">Verwalten</a>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th>Kategorie</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                @foreach (var kategorie in kategorien) {
+                        <tr>
+                            <td>@kategorie.KategorieName</td>
+                            <td class="text-end">
+                                <a asp-controller="Kategorie" asp-action="Edit" asp-route-kategorieid="@kategorie.KategorieId">Edit</a> |
+                                <a asp-controller="Kategorie" asp-action="Delete" asp-route-kategorieid="@kategorie.KategorieId">Delete</a>
+                            </td>
+                        </tr>
+                }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

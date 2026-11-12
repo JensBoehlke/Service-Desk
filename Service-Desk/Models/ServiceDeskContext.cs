@@ -5,6 +5,7 @@ namespace Service_Desk.Models
 {
     public class ServiceDeskContext : DbContext
     {
+        public DbSet<Service_Desk.Models.Kategorie> Kategorie { get; set; } = default!;
         public ServiceDeskContext(DbContextOptions<ServiceDeskContext> options)
             : base(options) { }
 

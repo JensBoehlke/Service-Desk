@@ -17,10 +17,11 @@ namespace Service_Desk.Controllers
         public async Task<IActionResult> Index(
             TicketStatus? status,
             Prioritaet? prioritaet,
-            Kategorie? kategorie)
+            int? kategorie)
         {
             var tickets = _context.Tickets
                 .Include(ticket => ticket.Mitarbeiter)
+                .Include(ticket => ticket.Kategorie)
                 .AsQueryable();
 
             if (status.HasValue)
@@ -35,8 +36,10 @@ namespace Service_Desk.Controllers
 
             if (kategorie.HasValue)
             {
-                tickets = tickets.Where(ticket => ticket.Kategorie == kategorie.Value);
+                tickets = tickets.Where(ticket => ticket.KategorieId == kategorie.Value);
             }
+
+            await PopulateKategorieDropDownListAsync(kategorie);
 
             return View(await tickets
                 .OrderByDescending(ticket => ticket.Erstellungsdatum)
@@ -52,6 +55,7 @@ namespace Service_Desk.Controllers
 
             var ticket = await _context.Tickets
                 .Include(item => item.Mitarbeiter)
+                .Include(item => item.Kategorie)
                 .FirstOrDefaultAsync(item => item.TicketId == id);
 
             if (ticket == null)
@@ -65,13 +69,14 @@ namespace Service_Desk.Controllers
         public async Task<IActionResult> Create()
         {
             await PopulateMitarbeiterDropDownListAsync();
+            await PopulateKategorieDropDownListAsync();
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
-            [Bind("ErstelltVon,Titel,Beschreibung,Kategorie,Prioritaet,Status,MitarbeiterId")]
+            [Bind("ErstelltVon,Titel,Beschreibung,KategorieId,Prioritaet,Status,MitarbeiterId")]
             Ticket ticket)
         {
             if (ModelState.IsValid)
@@ -83,6 +88,7 @@ namespace Service_Desk.Controllers
             }
 
             await PopulateMitarbeiterDropDownListAsync(ticket.MitarbeiterId);
+            await PopulateKategorieDropDownListAsync(ticket.KategorieId);
             return View(ticket);
         }
 
@@ -100,6 +106,7 @@ namespace Service_Desk.Controllers
             }
 
             await PopulateMitarbeiterDropDownListAsync(ticket.MitarbeiterId);
+            await PopulateKategorieDropDownListAsync(ticket.KategorieId);
             return View(ticket);
         }
 
@@ -119,7 +126,7 @@ namespace Service_Desk.Controllers
                     item => item.ErstelltVon,
                     item => item.Titel,
                     item => item.Beschreibung,
-                    item => item.Kategorie,
+                    item => item.KategorieId,
                     item => item.Prioritaet,
                     item => item.Status,
                     item => item.MitarbeiterId))
@@ -141,6 +148,7 @@ namespace Service_Desk.Controllers
             }
 
             await PopulateMitarbeiterDropDownListAsync(ticket.MitarbeiterId);
+            await PopulateKategorieDropDownListAsync(ticket.KategorieId);
             return View(ticket);
         }
 
@@ -168,6 +176,7 @@ namespace Service_Desk.Controllers
 
             var ticket = await _context.Tickets
                 .Include(item => item.Mitarbeiter)
+                .Include(item => item.Kategorie)
                 .FirstOrDefaultAsync(item => item.TicketId == id);
 
             if (ticket == null)
@@ -203,6 +212,19 @@ namespace Service_Desk.Controllers
                 nameof(IT_Mitarbeiter.MitarbeiterId),
                 nameof(IT_Mitarbeiter.Name),
                 selectedMitarbeiterId);
+        }
+
+        private async Task PopulateKategorieDropDownListAsync(int? selectedKategorieId = null)
+        {
+            var kategorien = await _context.Kategorie
+                .OrderBy(kategorie => kategorie.KategorieName)
+                .ToListAsync();
+
+            ViewBag.KategorieId = new SelectList(
+                kategorien,
+                nameof(Kategorie.KategorieId),
+                nameof(Kategorie.KategorieName),
+                selectedKategorieId);
         }
 
         private bool TicketExists(int id)

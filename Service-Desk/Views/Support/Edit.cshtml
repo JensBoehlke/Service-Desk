@@ -36,8 +36,11 @@
 
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label asp-for="Kategorie" class="form-label"></label>
-                    <select asp-for="Kategorie" asp-items="Html.GetEnumSelectList<Kategorie>()" class="form-select"></select>
+                    <label asp-for="KategorieId" class="form-label"></label>
+                    <select asp-for="KategorieId" asp-items="ViewBag.KategorieId" class="form-select">
+                        <option value="">Keine Kategorie</option>
+                    </select>
+                    <span asp-validation-for="KategorieId" class="text-danger"></span>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label asp-for="Prioritaet" class="form-label"></label>

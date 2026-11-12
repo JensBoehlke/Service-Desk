@@ -4,7 +4,6 @@
     ViewData["Title"] = "Support – Tickets";
     var selectedStatus = Context.Request.Query["status"].ToString();
     var selectedPrioritaet = Context.Request.Query["prioritaet"].ToString();
-    var selectedKategorie = Context.Request.Query["kategorie"].ToString();
 }
 
 <h1>Support – Tickets</h1>
@@ -51,19 +50,8 @@
     </div>
     <div class="col-md-3">
         <label for="kategorie" class="form-label">Kategorie</label>
-        <select id="kategorie" name="kategorie" class="form-select">
+        <select id="kategorie" name="kategorie" asp-items="ViewBag.KategorieId" class="form-select">
             <option value="">Alle Kategorien</option>
-            @foreach (var value in Enum.GetValues<Kategorie>())
-            {
-                if (selectedKategorie == value.ToString())
-                {
-                    <option value="@value" selected>@value</option>
-                }
-                else
-                {
-                    <option value="@value">@value</option>
-                }
-            }
         </select>
     </div>
     <div class="col-md-3 d-flex align-items-end gap-2">
@@ -100,7 +88,7 @@ else
                         <td>@ticket.TicketId</td>
                         <td>@ticket.Titel</td>
                         <td>@ticket.ErstelltVon</td>
-                        <td>@ticket.Kategorie</td>
+                        <td>@(ticket.Kategorie?.KategorieName ?? "Keine Kategorie")</td>
                         <td>@ticket.Prioritaet</td>
                         <td>@ticket.Status</td>
                         <td>@(ticket.Mitarbeiter?.Name ?? "Nicht zugewiesen")</td>

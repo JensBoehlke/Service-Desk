@@ -1,11 +1,20 @@
-﻿namespace Service_Desk.Models
+﻿using System.ComponentModel.DataAnnotations;
+using System.Net.Sockets;
+
+namespace Service_Desk.Models
 {
-    public enum Kategorie
+    public class Kategorie
     {
-        Hardware,
-        Software,
-        Netzwerk,
-        Anmeldung,
-        Sonstiges
+        [Key]
+        public int KategorieId { get; set; }
+
+        [Required(ErrorMessage = "Bitte eine Kategorie angeben.")]
+        [StringLength(50)]
+
+        [Display(Name = "Kategorie Name")]
+        public string KategorieName { get; set; } = string.Empty;
+
+        public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
+
     }
 }
