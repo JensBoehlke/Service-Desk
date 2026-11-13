@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Service_Desk.Data;
 using Service_Desk.Models;
 
 namespace Service_Desk
@@ -35,6 +36,14 @@ namespace Service_Desk
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}")
                 .WithStaticAssets();
+
+            // TESTDATEN: Beim Start werden fehlende Migrationen und gut erkennbare Demodaten angelegt.
+            using (var scope = app.Services.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<ServiceDeskContext>();
+                context.Database.Migrate();
+                DatabaseSeeder.Seed(context);
+            }
 
             app.Run();
         }

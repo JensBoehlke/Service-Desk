@@ -1,41 +1,41 @@
 @model IEnumerable<Service_Desk.Models.Kategorie>
+@inject Service_Desk.Models.ServiceDeskContext Database
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Kategorien";
+    // TESTDATEN: Ticketanzahlen werden ohne Änderung am Controller ergänzt.
+    var ticketAnzahlen = Database.Tickets
+        .Where(ticket => ticket.KategorieId.HasValue)
+        .GroupBy(ticket => ticket.KategorieId!.Value)
+        .ToDictionary(group => group.Key, group => group.Count());
 }
 
-<h1>Index</h1>
+<!-- KATEGORIEN: Bootstrap-Karten statt der unformatierten Standardansicht. -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
+    <div>
+        <p class="section-label mb-1">Struktur</p>
+        <h1 class="h2 mb-1">Kategorien</h1>
+        <p class="text-secondary mb-0">Tickets übersichtlich nach Themen ordnen.</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">＋ Neue Kategorie</a>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.KategorieName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Tickets)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(model => item.KategorieName)
-            </td>
-            <td>
-                @Html.DisplayFor(model => item.Tickets)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.KategorieId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.KategorieId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.KategorieId">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+<div class="row g-3">
+    @foreach (var item in Model)
+    {
+        <div class="col-sm-6 col-xl-3">
+            <div class="card action-card h-100">
+                <div class="card-body">
+                    <span class="action-icon">#</span>
+                    <h2 class="h5">@item.KategorieName</h2>
+                    <p class="text-secondary">@(ticketAnzahlen.GetValueOrDefault(item.KategorieId)) Ticket(s)</p>
+                    <a asp-action="Details" asp-route-id="@item.KategorieId" class="stretched-link">Details ansehen</a>
+                </div>
+                <div class="card-footer bg-white border-0 position-relative d-flex gap-3 pb-3">
+                    <a asp-action="Edit" asp-route-id="@item.KategorieId" class="small position-relative">Bearbeiten</a>
+                    <a asp-action="Delete" asp-route-id="@item.KategorieId" class="small text-danger position-relative">Löschen</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
