@@ -1,97 +1,88 @@
 @model IEnumerable<Service_Desk.Models.IT_Mitarbeiter>
+@inject Service_Desk.Models.ServiceDeskContext Database
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Admin-Bereich";
     var kategorien = ViewBag.Kategorien as IEnumerable<Service_Desk.Models.Kategorie>
                      ?? Enumerable.Empty<Service_Desk.Models.Kategorie>();
+    // TESTDATEN: Ticketanzahlen werden in einem Schritt geladen; die Controller bleiben unverändert.
+    var ticketAnzahlen = Database.Tickets
+        .Where(ticket => ticket.MitarbeiterId.HasValue)
+        .GroupBy(ticket => ticket.MitarbeiterId!.Value)
+        .ToDictionary(group => group.Key, group => group.Count());
 }
 
-<h1>Index</h1>
+<!-- TEAM: Die sechs Testpersonen werden in einer einfachen, gut lesbaren Liste gezeigt. -->
+<div class="mb-4">
+    <p class="section-label mb-1">Mitarbeitende</p>
+    <!-- ADMIN: Der Bereich bündelt Mitarbeitende und Kategorien an einer Stelle. -->
+    <h1 class="h2 mb-1">Admin-Bereich</h1>
+    <p class="text-secondary mb-0">Drei Frauen und drei Männer stehen für die Bearbeitung der Test-Tickets bereit.</p>
+</div>
 
-<div class="row">
-    <!-- Links: Liste der IT-Mitarbeiter -->
-    <div class="col-md-8">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>
-                        @Html.DisplayNameFor(model => model.Name)
-                    </th>
-                    <th>
-                        @Html.DisplayNameFor(model => model.Tickets)
-                    </th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-        @foreach (var item in Model) {
-                <tr>
-                    <td>
-                        @Html.DisplayFor(model => item.Name)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(model => item.Tickets)
-                    </td>
-                    <td>
-                        <a asp-action="Edit" asp-route-mitarbeiterid="@item.MitarbeiterId">Edit</a> |
-                        <a asp-action="Details" asp-route-mitarbeiterid="@item.MitarbeiterId">Details</a> |
-                        <a asp-action="Delete" asp-route-mitarbeiterid="@item.MitarbeiterId">Delete</a>
-                    </td>
-                </tr>
-        }
-            </tbody>
-        </table>
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card content-card h-100">
+            <div class="card-header bg-white border-0 p-4 pb-2"><h2 class="h5 mb-0">Teamübersicht</h2></div>
+            <div class="card-body pt-2">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead><tr><th>Name</th><th>Tickets</th><th class="text-end">Aktionen</th></tr></thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td><strong>@item.Name</strong></td>
+                                    <td><span class="badge-status">@(ticketAnzahlen.GetValueOrDefault(item.MitarbeiterId)) Ticket(s)</span></td>
+                                    <td class="text-end">
+                                        <a asp-action="Details" asp-route-mitarbeiterid="@item.MitarbeiterId" class="btn btn-sm btn-outline-primary">Details</a>
+                                        <a asp-action="Edit" asp-route-mitarbeiterid="@item.MitarbeiterId" class="btn btn-sm btn-outline-secondary">Bearbeiten</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Rechts: Create-Formular + Kategorien darunter -->
-    <div class="col-md-4">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Neuer IT-Mitarbeiter</h5>
-            </div>
-            <div class="card-body">
+    <div class="col-lg-4">
+        <!-- TEAM: Vorhandenes Create-Verhalten bleibt erhalten; nur die Darstellung wurde vereinfacht. -->
+        <div class="card content-card mb-4">
+            <div class="card-body p-4">
+                <h2 class="h5 mb-3">Teammitglied hinzufügen</h2>
                 <form asp-action="Create" method="post">
                     @Html.AntiForgeryToken()
-
-                    <div class="form-group mb-3">
-                        <label for="Name" class="control-label">Name</label>
-                        <input type="text" id="Name" name="Name" class="form-control" maxlength="50" required />
-                    </div>
-
-                    <div class="form-group">
-                        <input type="submit" value="Create" class="btn btn-primary" />
-                    </div>
+                    <label for="Name" class="form-label">Name</label>
+                    <input type="text" id="Name" name="Name" class="form-control mb-3" maxlength="50" required />
+                    <button type="submit" class="btn btn-primary w-100">Hinzufügen</button>
                 </form>
             </div>
         </div>
 
-        <!-- Kategorien (Inhalt von Views/Kategorie/Index.cshtml) -->
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Kategorien</h5>
-                <a asp-controller="Kategorie" asp-action="Create" class="small">Create New</a>
+        <div class="card content-card">
+            <div class="card-header bg-white border-0 p-4 pb-2 d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">Kategorien</h2>
+                <a asp-controller="Kategorie" asp-action="Create" class="btn btn-sm btn-primary">Neue Kategorie</a>
             </div>
-            <div class="card-body">
-                <table class="table table-sm mb-0">
-                    <thead>
-                        <tr>
-                            <th>Kategorie</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                @foreach (var kategorie in kategorien) {
-                        <tr>
-                            <td>@kategorie.KategorieName</td>
-                            <td class="text-end">
-                                <a asp-controller="Kategorie" asp-action="Edit" asp-route-kategorieid="@kategorie.KategorieId">Edit</a> |
-                                <a asp-controller="Kategorie" asp-action="Details" asp-route-kategorieid="@kategorie.KategorieId">Details</a> |
-                                <a asp-controller="Kategorie" asp-action="Delete" asp-route-kategorieid="@kategorie.KategorieId">Delete</a>
-                            </td>
-                        </tr>
-                }
-                    </tbody>
-                </table>
+            <div class="card-body pt-2">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle mb-0">
+                        <tbody>
+                            @foreach (var kategorie in kategorien)
+                            {
+                                <tr>
+                                    <td><strong>@kategorie.KategorieName</strong></td>
+                                    <td class="text-end text-nowrap">
+                                        <a asp-controller="Kategorie" asp-action="Edit" asp-route-kategorieid="@kategorie.KategorieId" class="btn btn-sm btn-outline-secondary">Bearbeiten</a>
+                                        <a asp-controller="Kategorie" asp-action="Delete" asp-route-kategorieid="@kategorie.KategorieId" class="btn btn-sm btn-outline-danger">Löschen</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
