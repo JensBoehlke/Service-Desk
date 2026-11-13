@@ -1,8 +1,117 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@using Microsoft.EntityFrameworkCore
+@using Service_Desk.Models
+@inject ServiceDeskContext Database
+
+@{
+    ViewData["Title"] = "Dashboard";
+
+    // DASHBOARD: Alle Daten werden hier geladen, damit die Controller unverändert bleiben.
+    var alleTickets = Database.Tickets
+        .Include(ticket => ticket.Kategorie)
+        .Include(ticket => ticket.Mitarbeiter)
+        .OrderByDescending(ticket => ticket.Erstellungsdatum)
+        .ToList();
+
+    var ausgewaehlterStatus = Context.Request.Query["status"].ToString();
+    var sichtbareTickets = alleTickets.AsEnumerable();
+
+    if (Enum.TryParse<TicketStatus>(ausgewaehlterStatus, out var statusFilter))
+    {
+        sichtbareTickets = sichtbareTickets.Where(ticket => ticket.Status == statusFilter);
+    }
+
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<!-- DASHBOARD: Aufbau nach der Referenz, aber im bestehenden grünen Service-Desk-Layout. -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
+    <div>
+        <p class="section-label mb-1">Service Desk</p>
+        <h1 class="display-6 fw-bold mb-1">Dashboard</h1>
+        <p class="text-secondary mb-0">Übersicht aller Tickets und ihres aktuellen Bearbeitungsstands.</p>
+    </div>
+    <a asp-controller="Ticket" asp-action="Create" class="btn btn-primary">＋ Neues Ticket</a>
 </div>
+
+<section class="card content-card dashboard-ticket-card">
+    <div class="card-body p-3 p-lg-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
+            <div>
+                <h2 class="h4 mb-1">Alle Tickets</h2>
+                <span class="text-secondary">@sichtbareTickets.Count() von @alleTickets.Count Ticket(s)</span>
+            </div>
+
+            <!-- FILTER: Einfacher GET-Filter ohne JavaScript und ohne Controller-Anpassung. -->
+            <form method="get" class="dashboard-filter">
+                <label for="status" class="form-label small fw-semibold">Status</label>
+                <div class="d-flex gap-2">
+                    <select id="status" name="status" class="form-select">
+                        <option value="">Alle Status</option>
+                        @foreach (var status in Enum.GetValues<TicketStatus>())
+                        {
+                            if (ausgewaehlterStatus == status.ToString())
+                            {
+                                <option value="@status" selected>@(status == TicketStatus.InBearbeitung ? "In Bearbeitung" : status)</option>
+                            }
+                            else
+                            {
+                                <option value="@status">@(status == TicketStatus.InBearbeitung ? "In Bearbeitung" : status)</option>
+                            }
+                        }
+                    </select>
+                    <button type="submit" class="btn btn-outline-primary">Filtern</button>
+                </div>
+            </form>
+        </div>
+
+        @if (!sichtbareTickets.Any())
+        {
+            <div class="alert alert-light border mb-0">Für diesen Status sind keine Tickets vorhanden.</div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table dashboard-table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Nr.</th>
+                            <th>Titel</th>
+                            <th>Kategorie</th>
+                            <th>Status</th>
+                            <th>Zuständig</th>
+                            <th>Erstellt am</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var ticket in sichtbareTickets)
+                        {
+                            var statusKlasse = ticket.Status switch
+                            {
+                                TicketStatus.Offen => "ticket-status-open",
+                                TicketStatus.InBearbeitung => "ticket-status-progress",
+                                TicketStatus.Abgeschlossen => "ticket-status-complete",
+                                _ => string.Empty
+                            };
+
+                            <tr>
+                                <td class="text-secondary">#@ticket.TicketId</td>
+                                <td>
+                                    <a asp-controller="Support" asp-action="Details" asp-route-id="@ticket.TicketId" class="ticket-title-link">
+                                        @ticket.Titel
+                                    </a>
+                                </td>
+                                <td>@(ticket.Kategorie?.KategorieName ?? "–")</td>
+                                <td>
+                                    <span class="ticket-status @statusKlasse">
+                                        @(ticket.Status == TicketStatus.InBearbeitung ? "In Bearbeitung" : ticket.Status)
+                                    </span>
+                                </td>
+                                <td>@(ticket.Mitarbeiter?.Name ?? "Nicht zugewiesen")</td>
+                                <td>@ticket.Erstellungsdatum.ToString("dd.MM.yyyy")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</section>

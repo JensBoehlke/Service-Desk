@@ -1,66 +1,61 @@
 @model IEnumerable<Service_Desk.Models.Ticket>
+@inject Service_Desk.Models.ServiceDeskContext Database
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Tickets";
+    // TESTDATEN: Kategorien werden hier nachgeschlagen, damit kein Controller geändert werden muss.
+    var kategorien = Database.Kategorie.ToDictionary(item => item.KategorieId, item => item.KategorieName);
 }
 
-<h1>Index</h1>
+<!-- TICKETLISTE: Klare Kopfzeile und responsive Bootstrap-Tabelle. -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
+    <div>
+        <p class="section-label mb-1">Service Desk</p>
+        <h1 class="h2 mb-1">Alle Tickets</h1>
+        <p class="text-secondary mb-0">Anfragen und ihren aktuellen Bearbeitungsstand ansehen.</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">＋ Neues Ticket</a>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.ErstelltVon)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Titel)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Beschreibung)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Erstellungsdatum)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Kategorie)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Status)
-            </th>
-            <th><th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(model => item.ErstelltVon)
-            </td>
-
-            <td>
-                @Html.DisplayFor(model => item.Titel)
-            </td>
-
-            <td>
-                @Html.DisplayFor(model => item.Beschreibung)
-            </td>
-            
-            <td>
-                @Html.DisplayFor(model => item.Erstellungsdatum)
-            </td>
-            
-            <td>
-                @Html.DisplayFor(model => item.Kategorie)
-            </td>
-
-            <td>
-                @Html.DisplayFor(model => item.Status)
-            </td>
-
-        </tr>
-}
-    </tbody>
-</table>
+<div class="card content-card">
+    <div class="card-body p-0">
+        @if (!Model.Any())
+        {
+            <div class="p-4 text-center text-secondary">Noch keine Tickets vorhanden.</div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Nr.</th>
+                            <th>Titel</th>
+                            <th>Erstellt von</th>
+                            <th>Kategorie</th>
+                            <th>Status</th>
+                            <th>Erstellt am</th>
+                            <th class="text-end pe-4">Aktion</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var ticket in Model)
+                        {
+                            <tr>
+                                <td class="ps-4 text-secondary">#@ticket.TicketId</td>
+                                <td><strong>@ticket.Titel</strong></td>
+                                <td>@ticket.ErstelltVon</td>
+                                <td>@(ticket.KategorieId.HasValue && kategorien.TryGetValue(ticket.KategorieId.Value, out var kategorieName) ? kategorieName : "Nicht zugeordnet")</td>
+                                <td><span class="badge-status">@ticket.Status</span></td>
+                                <td>@ticket.Erstellungsdatum.ToString("dd.MM.yyyy HH:mm")</td>
+                                <td class="text-end pe-4">
+                                    <a asp-action="Details" asp-route-id="@ticket.TicketId" class="btn btn-sm btn-outline-primary">Details</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

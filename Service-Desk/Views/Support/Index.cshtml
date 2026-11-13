@@ -1,9 +1,21 @@
 @model IEnumerable<Service_Desk.Models.Ticket>
+@inject Service_Desk.Models.ServiceDeskContext Database
 
 @{
     ViewData["Title"] = "Support – Tickets";
     var selectedStatus = Context.Request.Query["status"].ToString();
     var selectedPrioritaet = Context.Request.Query["prioritaet"].ToString();
+    var selectedSortierung = Context.Request.Query["sortierung"].ToString();
+
+    // SORTIERUNG: Standardmäßig stehen die neuesten Tickets oben.
+    var sortierteTickets = selectedSortierung == "aufsteigend"
+        ? Model.OrderBy(ticket => ticket.Erstellungsdatum)
+        : Model.OrderByDescending(ticket => ticket.Erstellungsdatum);
+
+    // SUPPORT: Die Statuszahlen beziehen sich immer auf alle Tickets, unabhängig vom aktiven Filter.
+    var offeneTickets = Database.Tickets.Count(ticket => ticket.Status == TicketStatus.Offen);
+    var ticketsInBearbeitung = Database.Tickets.Count(ticket => ticket.Status == TicketStatus.InBearbeitung);
+    var abgeschlosseneTickets = Database.Tickets.Count(ticket => ticket.Status == TicketStatus.Abgeschlossen);
 }
 
 <h1>Support – Tickets</h1>
@@ -13,8 +25,31 @@
     <a asp-action="Create" class="btn btn-primary">Neues Ticket</a>
 </div>
 
-<form method="get" class="row g-3 mb-4">
-    <div class="col-md-3">
+<!-- SUPPORT: Die Statusübersicht wurde bewusst aus dem Dashboard hierher verschoben. -->
+<section class="row g-3 mb-4" aria-label="Ticketstatus">
+    <div class="col-md-4">
+        <div class="status-card status-card-open h-100">
+            <span class="status-card-number">@offeneTickets</span>
+            <span>Offen</span>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="status-card status-card-progress h-100">
+            <span class="status-card-number">@ticketsInBearbeitung</span>
+            <span>In Bearbeitung</span>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="status-card status-card-complete h-100">
+            <span class="status-card-number">@abgeschlosseneTickets</span>
+            <span>Abgeschlossen</span>
+        </div>
+    </div>
+</section>
+
+<!-- FILTERLAYOUT: Vier gleich breite Auswahlfelder und ein breiter Aktionsbereich. -->
+<form method="get" class="row g-3 align-items-end mb-4">
+    <div class="col-md-6 col-xl-2">
         <label for="status" class="form-label">Status</label>
         <select id="status" name="status" class="form-select">
             <option value="">Alle Status</option>
@@ -31,7 +66,7 @@
             }
         </select>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-6 col-xl-2">
         <label for="prioritaet" class="form-label">Priorität</label>
         <select id="prioritaet" name="prioritaet" class="form-select">
             <option value="">Alle Prioritäten</option>
@@ -48,19 +83,37 @@
             }
         </select>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-6 col-xl-2">
         <label for="kategorie" class="form-label">Kategorie</label>
         <select id="kategorie" name="kategorie" asp-items="ViewBag.KategorieId" class="form-select">
             <option value="">Alle Kategorien</option>
         </select>
     </div>
-    <div class="col-md-3 d-flex align-items-end gap-2">
-        <button type="submit" class="btn btn-secondary">Filtern</button>
-        <a asp-action="Index" class="btn btn-outline-secondary">Zurücksetzen</a>
+    <div class="col-md-6 col-xl-2">
+        <label for="sortierung" class="form-label">Erstellungsdatum</label>
+        <select id="sortierung" name="sortierung" class="form-select">
+            @if (selectedSortierung == "aufsteigend")
+            {
+                <option value="absteigend">Absteigend – neueste zuerst</option>
+                <option value="aufsteigend" selected>Aufsteigend – älteste zuerst</option>
+            }
+            else
+            {
+                <option value="absteigend" selected>Absteigend – neueste zuerst</option>
+                <option value="aufsteigend">Aufsteigend – älteste zuerst</option>
+            }
+        </select>
+    </div>
+    <div class="col-12 col-xl-4">
+        <span class="form-label d-block">Aktionen</span>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary flex-fill">Filtern</button>
+            <a asp-action="Index" class="btn btn-outline-secondary flex-fill">Zurücksetzen</a>
+        </div>
     </div>
 </form>
 
-@if (!Model.Any())
+@if (!sortierteTickets.Any())
 {
     <div class="alert alert-info">Zu dieser Auswahl wurden keine Tickets gefunden.</div>
 }
@@ -82,7 +135,7 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (var ticket in Model)
+                @foreach (var ticket in sortierteTickets)
                 {
                     <tr>
                         <td>@ticket.TicketId</td>
@@ -112,5 +165,3 @@ else
         </table>
     </div>
 }
-
-

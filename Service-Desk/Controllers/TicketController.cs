@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Service_Desk.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 public class TicketController : Controller
 {
@@ -37,8 +38,16 @@ public class TicketController : Controller
     }
 
     // GET: TICKETS/Create
-    public IActionResult Create()
+    public async Task<IActionResult> Create() // asyc fürs await
     {
+        var kategorien = await _context.Kategorie
+        .OrderBy(kategorie => kategorie.KategorieName)
+        .ToListAsync();
+
+        ViewBag.KategorieId = new SelectList(
+            kategorien,
+            nameof(Kategorie.KategorieId),
+            nameof(Kategorie.KategorieName));
         return View();
     }
 
@@ -47,13 +56,27 @@ public class TicketController : Controller
     // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("TicketId,ErstelltVon,Titel,Beschreibung,Erstellungsdatum,Kategorie,Prioritaet,Status,MitarbeiterId,Mitarbeiter")] Ticket ticket)
+    public async Task<IActionResult> Create([Bind("TicketId,ErstelltVon,Titel,Beschreibung,Erstellungsdatum,KategorieId,Prioritaet,MitarbeiterId")] Ticket ticket)
     {
+      // beim neuladen wenn Fehler
+        // hier wird einfach immer die letzte kategorie angezeigt
+        //sorgt dafür, dass die zuvor ausgewählte Kategorie markiert bleibt.
+        var kategorien = await _context.Kategorie
+    .OrderBy(kategorie => kategorie.KategorieName)
+    .ToListAsync();
+
+        ViewBag.KategorieId = new SelectList(
+            kategorien,
+            nameof(Kategorie.KategorieId),
+            nameof(Kategorie.KategorieName),
+            ticket.KategorieId);
         if (ModelState.IsValid)
         {
+            ticket.Status = TicketStatus.Offen; // Ticketstatus beim erstellen auf Offen setzen
+
             _context.Add(ticket);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index", "Home");
         }
         return View(ticket);
     }
