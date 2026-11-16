@@ -3,10 +3,8 @@
 @{
     ViewData["Title"] = "Create";
 }
-
 <h1>Ticket erstellen</h1>
 
-<h4></h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
@@ -30,7 +28,7 @@
                 <input asp-for="Beschreibung" class="form-control textarea" />
                 <span asp-validation-for="Beschreibung" class="text-danger"></span>
             </div>
-
+            
             <div class="form-group">
                 <label asp-for="KategorieId" class="control-label"></label>
 
@@ -39,17 +37,20 @@
                     class="form-select">
                 <option value="">Bitte Kategorie auswählen</option>
                 </select>
-
+               
                 <span asp-validation-for="KategorieId"
                     class="text-danger"></span>
+                
             </div>
-
+            
             <div class="form-group">
-                <input type="submit" value="speichern" class="btn btn-primary" />
+                <input type="submit" value="speichern" class="btn btn-primary" css-border="2px solid red" />
             </div>
         </form>
     </div>
 </div>
+
+<br />
 
 <div>
     <!-- NAVIGATION: Vom Ticketformular geht es zurück zur zentralen Übersicht im Dashboard. -->
