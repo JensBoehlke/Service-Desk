@@ -15,8 +15,9 @@ public class KategorieController : Controller
     // GET: KATEGORIES
     public async Task<IActionResult> Index()    
     {
-        return View(await _context.Kategorie.ToListAsync());
+        return RedirectToAction("Index", "IT_Mitarbeiter");
     }
+
 
     // GET: KATEGORIES/Details/5
     public async Task<IActionResult> Details(int? kategorieid)
@@ -132,9 +133,23 @@ public class KategorieController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int? kategorieid)
     {
+        if (kategorieid == null)
+        {
+            return NotFound();
+        }
+
         var kategorie = await _context.Kategorie.FindAsync(kategorieid);
         if (kategorie != null)
         {
+            var tickets = await _context.Tickets
+                .Where(t => t.KategorieId == kategorieid)
+                .ToListAsync();
+
+            foreach (var ticket in tickets)
+            {
+                ticket.KategorieId = null;
+            }
+
             _context.Kategorie.Remove(kategorie);
         }
 
