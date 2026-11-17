@@ -16,8 +16,68 @@
     var offeneTickets = Database.Tickets.Count(ticket => ticket.Status == TicketStatus.Offen);
     var ticketsInBearbeitung = Database.Tickets.Count(ticket => ticket.Status == TicketStatus.InBearbeitung);
     var abgeschlosseneTickets = Database.Tickets.Count(ticket => ticket.Status == TicketStatus.Abgeschlossen);
-}
 
+    // Status und Priorität der Tickets.
+    var diagrammTickets = Database.Tickets
+        .Select(ticket => new
+        {
+            ticket.Status,
+            ticket.Prioritaet
+        })
+        .ToList();
+
+    // Erster Balken: Prioritäten aller offenen Tickets.
+    var offenNiedrig = diagrammTickets.Count(ticket =>
+        ticket.Status == TicketStatus.Offen &&
+        ticket.Prioritaet == Prioritaet.Niedrig);
+
+    var offenMittel = diagrammTickets.Count(ticket =>
+        ticket.Status == TicketStatus.Offen &&
+        ticket.Prioritaet == Prioritaet.Mittel);
+
+    var offenHoch = diagrammTickets.Count(ticket =>
+        ticket.Status == TicketStatus.Offen &&
+        ticket.Prioritaet == Prioritaet.Hoch);
+
+        // Zweiter Balken: Prioritäten aller Tickets in Bearbeitung.
+    var bearbeitungNiedrig = diagrammTickets.Count(ticket =>
+        ticket.Status == TicketStatus.InBearbeitung &&
+        ticket.Prioritaet == Prioritaet.Niedrig);
+
+    var bearbeitungMittel = diagrammTickets.Count(ticket =>
+        ticket.Status == TicketStatus.InBearbeitung &&
+        ticket.Prioritaet == Prioritaet.Mittel);
+
+    var bearbeitungHoch = diagrammTickets.Count(ticket =>
+        ticket.Status == TicketStatus.InBearbeitung &&
+        ticket.Prioritaet == Prioritaet.Hoch);
+
+        // Dritter Balken: Prioritäten aller Tickets.
+    var alleNiedrig = diagrammTickets.Count(ticket =>
+        ticket.Prioritaet == Prioritaet.Niedrig);
+
+    var alleMittel = diagrammTickets.Count(ticket =>
+        ticket.Prioritaet == Prioritaet.Mittel);
+
+    var alleHoch = diagrammTickets.Count(ticket =>
+        ticket.Prioritaet == Prioritaet.Hoch);
+
+        // Gesamtsummen der drei Balken.
+    var offenGesamt = offenNiedrig + offenMittel + offenHoch;
+
+    var bearbeitungGesamt =
+        bearbeitungNiedrig + bearbeitungMittel + bearbeitungHoch;
+
+    var alleGesamt = alleNiedrig + alleMittel + alleHoch;
+
+    // Alle Tickets bilden mit 100 Prozent den gemeinsamen Vergleichswert.
+    var vergleichsGesamt = Math.Max(1, alleGesamt);
+
+    int BalkenBreite(int anzahl)
+    {
+        return (int)Math.Round(anzahl * 100.0 / vergleichsGesamt);
+    }
+}
 <h1>Support – Tickets</h1>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -25,24 +85,82 @@
     <a asp-action="Create" class="btn btn-primary">Neues Ticket</a>
 </div>
 
-<!-- SUPPORT: Die Statusübersicht wurde bewusst aus dem Dashboard hierher verschoben. -->
-<section class="row g-3 mb-4" aria-label="Ticketstatus">
-    <div class="col-md-4">
-        <div class="status-card status-card-open h-100">
-            <span class="status-card-number">@offeneTickets</span>
-            <span>Offen</span>
+<!-- SUPPORT: Drei Prioritätsübersichten links, abgeschlossene Tickets rechts. -->
+<section class="row g-3 mb-4 align-items-stretch" aria-label="Ticketübersicht">
+    <div class="col-lg-9">
+        <div class="d-flex justify-content-end gap-2 mb-2" aria-label="Prioritätslegende">
+            <span class="badge text-bg-success">Niedrig</span>
+            <span class="badge text-bg-warning">Mittel</span>
+            <span class="badge text-bg-danger">Hoch</span>
+        </div>
+
+        <div class="d-flex flex-column gap-2" aria-label="Ticketstatus mit Prioritäten">
+            <div class="status-card status-card-open status-card-with-priorities">
+                <i class="bi bi-ticket-perforated status-card-icon" aria-hidden="true"></i>
+                <div class="status-card-content">
+                    <span class="status-card-number">@offeneTickets</span>
+                    <span>Offen</span>
+                </div>
+                <div class="progress-stacked status-card-priorities" aria-label="Prioritäten offener Tickets">
+                    <div class="progress" role="progressbar" aria-label="Niedrig" aria-valuenow="@offenNiedrig" aria-valuemin="0" aria-valuemax="@vergleichsGesamt" style="width: @(BalkenBreite(offenNiedrig))%;">
+                        <div class="progress-bar bg-success">@offenNiedrig</div>
+                    </div>
+                    <div class="progress" role="progressbar" aria-label="Mittel" aria-valuenow="@offenMittel" aria-valuemin="0" aria-valuemax="@vergleichsGesamt" style="width: @(BalkenBreite(offenMittel))%;">
+                        <div class="progress-bar bg-warning text-dark">@offenMittel</div>
+                    </div>
+                    <div class="progress" role="progressbar" aria-label="Hoch" aria-valuenow="@offenHoch" aria-valuemin="0" aria-valuemax="@vergleichsGesamt" style="width: @(BalkenBreite(offenHoch))%;">
+                        <div class="progress-bar bg-danger">@offenHoch</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-card status-card-progress status-card-with-priorities">
+                <i class="bi bi-arrow-repeat status-card-icon" aria-hidden="true"></i>
+                <div class="status-card-content">
+                    <span class="status-card-number">@ticketsInBearbeitung</span>
+                    <span>In Bearbeitung</span>
+                </div>
+                <div class="progress-stacked status-card-priorities" aria-label="Prioritäten der Tickets in Bearbeitung">
+                    <div class="progress" role="progressbar" aria-label="Niedrig" aria-valuenow="@bearbeitungNiedrig" aria-valuemin="0" aria-valuemax="@vergleichsGesamt" style="width: @(BalkenBreite(bearbeitungNiedrig))%;">
+                        <div class="progress-bar bg-success">@bearbeitungNiedrig</div>
+                    </div>
+                    <div class="progress" role="progressbar" aria-label="Mittel" aria-valuenow="@bearbeitungMittel" aria-valuemin="0" aria-valuemax="@vergleichsGesamt" style="width: @(BalkenBreite(bearbeitungMittel))%;">
+                        <div class="progress-bar bg-warning text-dark">@bearbeitungMittel</div>
+                    </div>
+                    <div class="progress" role="progressbar" aria-label="Hoch" aria-valuenow="@bearbeitungHoch" aria-valuemin="0" aria-valuemax="@vergleichsGesamt" style="width: @(BalkenBreite(bearbeitungHoch))%;">
+                        <div class="progress-bar bg-danger">@bearbeitungHoch</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-card status-card-all status-card-with-priorities">
+                <i class="bi bi-collection-fill status-card-icon" aria-hidden="true"></i>
+                <div class="status-card-content">
+                    <span class="status-card-number">@alleGesamt</span>
+                    <span>Alle Tickets</span>
+                </div>
+                <div class="progress-stacked status-card-priorities" aria-label="Prioritäten aller Tickets">
+                    <div class="progress" role="progressbar" aria-label="Niedrig" aria-valuenow="@alleNiedrig" aria-valuemin="0" aria-valuemax="@vergleichsGesamt" style="width: @(BalkenBreite(alleNiedrig))%;">
+                        <div class="progress-bar bg-success">@alleNiedrig</div>
+                    </div>
+                    <div class="progress" role="progressbar" aria-label="Mittel" aria-valuenow="@alleMittel" aria-valuemin="0" aria-valuemax="@vergleichsGesamt" style="width: @(BalkenBreite(alleMittel))%;">
+                        <div class="progress-bar bg-warning text-dark">@alleMittel</div>
+                    </div>
+                    <div class="progress" role="progressbar" aria-label="Hoch" aria-valuenow="@alleHoch" aria-valuemin="0" aria-valuemax="@vergleichsGesamt" style="width: @(BalkenBreite(alleHoch))%;">
+                        <div class="progress-bar bg-danger">@alleHoch</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="status-card status-card-progress h-100">
-            <span class="status-card-number">@ticketsInBearbeitung</span>
-            <span>In Bearbeitung</span>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="status-card status-card-complete h-100">
-            <span class="status-card-number">@abgeschlosseneTickets</span>
-            <span>Abgeschlossen</span>
+
+    <div class="col-lg-3">
+        <div class="status-card status-card-complete h-100 justify-content-center">
+            <i class="bi bi-check-circle-fill status-card-icon" aria-hidden="true"></i>
+            <div class="status-card-content">
+                <span class="status-card-number">@abgeschlosseneTickets</span>
+                <span>Abgeschlossen</span>
+            </div>
         </div>
     </div>
 </section>

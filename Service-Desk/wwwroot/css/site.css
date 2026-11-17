@@ -207,7 +207,7 @@ a:hover { color: var(--desk-green-dark); }
     font-weight: 700;
 }
 
-/* BOOTSTRAP: Primärbuttons und Form-Fokus folgen der grünen Farbwelt. */
+/* BOOTSTRAP:  */
 .btn-primary {
     background-color: var(--desk-green);
     border-color: var(--desk-green);
@@ -255,20 +255,47 @@ a:hover { color: var(--desk-green-dark); }
     font-weight: 650;
 }
 
-/* DASHBOARD: Statusfarben orientieren sich an der Referenz und bleiben gut lesbar. */
+/* DASHBOARD: */
 .status-card {
     display: flex;
-    min-height: 6.25rem;
-    padding: 1.1rem 1.25rem;
-    flex-direction: column;
-    justify-content: center;
+    min-height: 4.5rem;
+    padding: .7rem 1rem;
+    align-items: center;
+    gap: .75rem;
+    justify-content: flex-start;
     border: 1px solid transparent;
     border-radius: .85rem;
     font-weight: 600;
 }
 
+.status-card-icon {
+    flex: 0 0 auto;
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.status-card-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.status-card-with-priorities .status-card-content {
+    flex: 0 0 8rem;
+}
+
+.status-card-priorities {
+    min-width: 0;
+    height: 2.7rem;
+    margin-left: auto;
+    flex: 1;
+}
+
+.status-card-priorities > .progress {
+    height: 100%;
+}
+
 .status-card-number {
-    font-size: 1.75rem;
+    font-size: 1.4rem;
     font-weight: 750;
     line-height: 1.1;
 }
@@ -285,10 +312,27 @@ a:hover { color: var(--desk-green-dark); }
     border-color: #f2dfaa;
 }
 
+.status-card-all {
+    color: #315a6b;
+    background: #e5f0f4;
+    border-color: #cee1e8;
+}
+
 .status-card-complete {
     color: #236641;
     background: #dff3e7;
     border-color: #c9e8d5;
+}
+
+@media (max-width: 767.98px) {
+    .status-card-with-priorities { flex-wrap: wrap; }
+
+    .status-card-with-priorities .status-card-content { flex: 1; }
+
+    .status-card-priorities {
+        margin-left: 0;
+        flex-basis: 100%;
+    }
 }
 
 .dashboard-ticket-card { overflow: hidden; }
@@ -358,5 +402,43 @@ a:hover { color: var(--desk-green-dark); }
     .sidebar-footer {
         padding-inline: .35rem;
         justify-content: center;
+    }
+    .sidebar-brand.sidebar-brand--company {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #a8edc5;
+    }
+
+    .company-brand-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .company-logo {
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+        object-fit: contain;
+    }
+
+    .company-name {
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1.15;
+    }
+
+    .company-subtitle {
+        font-size: 14px;
+        font-weight: 400;
+    }
+    .company-brand-row .company-name {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        line-height: 1.15;
     }
 }
