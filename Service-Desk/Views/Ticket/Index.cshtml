@@ -49,7 +49,7 @@
                                 <td><span class="badge-status">@ticket.Status</span></td>
                                 <td>@ticket.Erstellungsdatum.ToString("dd.MM.yyyy HH:mm")</td>
                                 <td class="text-end pe-4">
-                                    <a asp-action="Details" asp-route-id="@ticket.TicketId" class="btn btn-sm btn-outline-primary">Details</a>
+                                    <a asp-controller="Ticket" asp-action="Details" asp-route-id="@ticket.TicketId" class="btn btn-sm btn-outline-primary">Details</a>
                                 </td>
                             </tr>
                         }

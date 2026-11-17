@@ -27,7 +27,7 @@
     <div>
         <p class="section-label mb-1">Service Desk</p>
         <h1 class="display-6 fw-bold mb-1">Mitarbeiter</h1>
-        <p class="text-secondary mb-0">Übersicht aller Tickets und ihres aktuellen Bearbeitungsstands.</p>
+        <p class="text-black" mb-0">Übersicht aller Tickets und ihres aktuellen Bearbeitungsstands.</p>
     </div>
     <a asp-controller="Ticket" asp-action="Create" class="btn btn-primary">＋ Neues Ticket</a>
 </div>
@@ -37,7 +37,7 @@
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
             <div>
                 <h2 class="h4 mb-1">Alle Tickets</h2>
-                <span class="text-secondary">@sichtbareTickets.Count() von @alleTickets.Count Ticket(s)</span>
+                <span class="text-blue">@sichtbareTickets.Count() von @alleTickets.Count Ticket(s)</span>
             </div>
 
             <!-- FILTER: Einfacher GET-Filter ohne JavaScript und ohne Controller-Anpassung. -->
@@ -93,9 +93,9 @@
                             };
 
                             <tr>
-                                <td class="text-secondary">@ticket.TicketId</td>
+                                <td class="text-black">@ticket.TicketId</td>
                                 <td>
-                                    <a asp-controller="Support" asp-action="Details" asp-route-id="@ticket.TicketId" class="ticket-title-link">
+                                    <a asp-controller="Ticket" asp-action="Details" asp-route-id="@ticket.TicketId" class="ticket-title-link text-black">
                                         @ticket.Titel
                                     </a>
                                 </td>

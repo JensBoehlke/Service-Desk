@@ -20,15 +20,35 @@ public class TicketController : Controller
     }
 
     // GET: TICKETS/Details/5
-    public async Task<IActionResult> Details(int? ticketid)
+    //public async Task<IActionResult> Details(int? ticketid)
+    //{
+    //    if (ticketid == null)
+    //    {
+    //        return NotFound();
+    //    }
+
+    //    var ticket = await _context.Tickets
+    //        .FirstOrDefaultAsync(m => m.TicketId == ticketid);
+    //    if (ticket == null)
+    //    {
+    //        return NotFound();
+    //    }
+
+    //    return View(ticket);
+    //}
+
+    public async Task<IActionResult> Details(int? id)
     {
-        if (ticketid == null)
+        if (id == null)
         {
             return NotFound();
         }
 
         var ticket = await _context.Tickets
-            .FirstOrDefaultAsync(m => m.TicketId == ticketid);
+            .Include(item => item.Mitarbeiter)
+            .Include(item => item.Kategorie)
+            .FirstOrDefaultAsync(item => item.TicketId == id);
+
         if (ticket == null)
         {
             return NotFound();
