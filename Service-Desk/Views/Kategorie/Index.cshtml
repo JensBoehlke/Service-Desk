@@ -29,11 +29,11 @@
                     <span class="action-icon">#</span>
                     <h2 class="h5">@item.KategorieName</h2>
                     <p class="text-secondary">@(ticketAnzahlen.GetValueOrDefault(item.KategorieId)) Ticket(s)</p>
-                    <a asp-action="Details" asp-route-id="@item.KategorieId" class="stretched-link">Details ansehen</a>
+                    <a asp-controller="Kategorie" asp-action="Details" asp-route-kategorieid="@item.KategorieId" class="stretched-link">Details ansehen</a>
                 </div>
                 <div class="card-footer bg-white border-0 position-relative d-flex gap-3 pb-3">
-                    <a asp-action="Edit" asp-route-id="@item.KategorieId" class="small position-relative">Bearbeiten</a>
-                    <a asp-action="Delete" asp-route-id="@item.KategorieId" class="small text-danger position-relative">Löschen</a>
+                    <a asp-controller="Kategorie" asp-action="Edit" asp-route-kategorieid="@item.KategorieId" class="small position-relative">Bearbeiten</a>
+                    <a asp-controller="Kategorie" asp-action="Delete" asp-route-kategorieid="@item.KategorieId" class="small text-danger position-relative">Löschen</a>
                 </div>
             </div>
         </div>
