@@ -42,7 +42,7 @@
                         @foreach (var ticket in Model)
                         {
                             <tr>
-                                <td class="ps-4 text-secondary">#@ticket.TicketId</td>
+                                <td class="ps-4 text-secondary">@ticket.TicketId</td>
                                 <td><strong>@ticket.Titel</strong></td>
                                 <td>@ticket.ErstelltVon</td>
                                 <td>@(ticket.KategorieId.HasValue && kategorien.TryGetValue(ticket.KategorieId.Value, out var kategorieName) ? kategorieName : "Nicht zugeordnet")</td>
