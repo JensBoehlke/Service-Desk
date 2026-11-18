@@ -42,7 +42,8 @@ a:hover { color: var(--desk-green-dark); }
     padding: 1.25rem 1rem;
     flex-direction: column;
     color: #fff;
-    background: var(--desk-green-dark);
+    /* Dunkles Tannengrün für die Navigationsleiste. */
+    background: #102b20;
 }
 
 .app-page {
@@ -97,13 +98,17 @@ a:hover { color: var(--desk-green-dark); }
 }
 
 .sidebar-link:hover,
-.sidebar-link:focus,
-.sidebar-link.active {
+.sidebar-link:focus {
     color: #fff;
-    background: rgba(255, 255, 255, .12);
+    background: #304a30;
 }
 
-.sidebar-link.active { font-weight: 650; }
+/* Ein gedecktes, gelbliches Grün markiert den ausgewählten Bereich. */
+.sidebar-link.active {
+    color: #102b20;
+    background: #c6ca94;
+    font-weight: 650;
+}
 
 .nav-icon {
     display: inline-flex;
@@ -288,6 +293,8 @@ a:hover { color: var(--desk-green-dark); }
     height: 2.7rem;
     margin-left: auto;
     flex: 1;
+    /* Der leere Balkenbereich zeigt die Hintergrundfarbe der jeweiligen Statuskarte. */
+    background-color: transparent;
 }
 
 .status-card-priorities > .progress {

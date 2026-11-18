@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Service Desk – Änderungen an Home und Tickets</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 20px; line-height: 1.6; color: #173d30; background: #f4faf6; }
+        h1, h2 { color: #075d3d; }
+        table { border-collapse: collapse; width: 100%; background: white; }
+        th, td { border: 1px solid #c4d9cb; padding: 10px; text-align: left; vertical-align: top; }
+        code { background: #e0eee5; padding: 2px 4px; overflow-wrap: anywhere; }
+    </style>
+</head>
+<body>
+    <h1>Home und Ticketübersicht getrennt</h1>
+    <p>Änderungen vom 17.11.2026. Die bisherige Übersicht auf Home gehört jetzt zur Ticketseite. Home hat einen leeren Inhaltsbereich mit der vorhandenen Navigation.</p>
+    <h2>Was wurde geändert?</h2>
+    <table>
+        <thead><tr><th>Datei</th><th>Änderung und Zweck</th></tr></thead>
+        <tbody>
+            <tr><td><code>Service-Desk/Views/Home/Index.cshtml</code></td><td>Leere Startseite. Das gemeinsame Layout zeigt weiterhin Logo, Navigation und Fußzeile.</td></tr>
+            <tr><td><code>Service-Desk/Views/Ticket/Index.cshtml</code></td><td>Bisherige Home-Ansicht übernommen: Statusfilter, Ticketanzahl und farbige Statusanzeige. Überschrift „Tickets“. Keine Spalte „Zuständig“. Pro Ticket gibt es einen Details-Button. „Erstellt von“ bleibt erhalten.</td></tr>
+            <tr><td><code>Service-Desk/Controllers/TicketController.cs</code></td><td>Index lädt Tickets mit Kategorie, sortiert die neuesten zuerst und filtert bei gewähltem Status. Nach dem Erstellen führt die Weiterleitung zur Ticketübersicht.</td></tr>
+            <tr><td><code>Service-Desk/Views/Shared/_Layout.cshtml</code></td><td>Navigation enthält „Startseite“ und „Tickets“. Ein überflüssiges Anführungszeichen am Logo-Link wurde entfernt.</td></tr>
+            <tr><td><code>Service-Desk/Controllers/HomeController.cs</code></td><td>Der alte Aufruf Home/Ticket leitet zur Ticketübersicht weiter, statt eine fehlende View zu suchen.</td></tr>
+        </tbody>
+    </table>
+    <h2>Wie funktioniert das?</h2>
+    <p>Der TicketController lädt die Daten und übergibt die Ticketliste als Model an die View. Über ViewBag kommen der gewählte Status und die Gesamtanzahl hinzu. Die View baut daraus die Tabelle auf. Der Details-Button übergibt die TicketId an die bereits vorhandene Details-Methode.</p>
+    <p>Die geänderten Stellen sind kommentiert. Die Statusfarben werden mit einfachen if-Abfragen ausgewählt. Es wurden keine Datenbankmodelle oder Migrationen geändert.</p>
+    <h2>Im Browser prüfen</h2>
+    <ol>
+        <li>Anwendung starten: Die Startseite hat einen leeren Inhaltsbereich und zeigt die Navigation.</li>
+        <li>„Tickets“ anklicken: Tabelle ohne „Zuständig“, mit „Erstellt von“ und Details-Buttons.</li>
+        <li>Jeden Status filtern, danach „Alle Status“ wählen. Anzahl und Liste vergleichen.</li>
+        <li>„Details“ anklicken: Die Daten des ausgewählten Tickets müssen erscheinen.</li>
+        <li>Ein neues Ticket erstellen: Nach dem Speichern muss die Ticketübersicht erscheinen.</li>
+    </ol>
+    <h2>Fehlerbehebung: Ticket im Mitarbeiterbereich erstellen</h2>
+    <p>In <code>Service-Desk/Views/Ticket/Create.cshtml</code> hatte das Nachrichtenfeld nur eine <code>id</code>, aber kein <code>name</code>. Deshalb wurde die Beschreibung nicht an den Controller übertragen. Das Pflichtfeld blieb leer und <code>ModelState.IsValid</code> verhinderte das Speichern.</p>
+    <p>Das Feld verwendet jetzt <code>asp-for="Beschreibung"</code>. Dadurch erzeugt Razor den passenden Feldnamen und der eingegebene Text wird übertragen. Eine Validierungsanzeige und die vorhandenen Validierungsskripte zeigen fehlende oder zu lange Eingaben an. Das Formular sendet ausdrücklich per POST an Ticket/Create. Der Zurück-Link führt zur Ticketübersicht. Alle Änderungen im Formular sind kommentiert.</p>
+    <p>Zum Prüfen ein Ticket mit Name, Titel und Nachricht speichern. Es muss danach in der Ticketliste stehen und die Nachricht muss in den Details erscheinen. Bei leerer Nachricht muss eine Fehlermeldung erscheinen.</p>
+    <h2>Prüfstand</h2>
+    <p id="pruefstand">Build erfolgreich: 0 Fehler und 0 Warnungen mit <code>dotnet build Service-Desk/Service-Desk.csproj --no-restore -p:NuGetAudit=false</code>. Tabellenstruktur geprüft: sieben Überschriften und sieben Datenzellen. <code>git diff --check</code> meldet keine Formatfehler. Ein Browser-Test mit SQL Server steht noch aus. Die Paketsicherheitsprüfung war bei diesem Build deaktiviert.</p>
+</body>
+</html>

@@ -1,54 +1,102 @@
 @model IEnumerable<Service_Desk.Models.Ticket>
-@inject Service_Desk.Models.ServiceDeskContext Database
 
 @{
     ViewData["Title"] = "Tickets";
-    // TESTDATEN: Kategorien werden hier nachgeschlagen, damit kein Controller geändert werden muss.
-    var kategorien = Database.Kategorie.ToDictionary(item => item.KategorieId, item => item.KategorieName);
+    // Der Controller liefert die Tickets passend zum gewählten Status.
+    string ausgewaehlterStatus = ViewBag.AusgewaehlterStatus;
+    int anzahlAlleTickets = ViewBag.AnzahlAlleTickets;
 }
-
-<!-- TICKETLISTE: Klare Kopfzeile und responsive Bootstrap-Tabelle. -->
+@* Die bisherige Home-Übersicht gehört jetzt zur Ticketseite. *@
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
     <div>
         <p class="section-label mb-1">Service Desk</p>
-        <h1 class="h2 mb-1">Alle Tickets</h1>
-        <p class="text-secondary mb-0">Anfragen und ihren aktuellen Bearbeitungsstand ansehen.</p>
+        <h1 class="display-6 fw-bold mb-1">Tickets</h1>
+        <p class="text-black mb-0">Übersicht aller Tickets und ihres aktuellen Bearbeitungsstands.</p>
     </div>
-    <a asp-action="Create" class="btn btn-primary">＋ Neues Ticket</a>
+    <a asp-controller="Ticket" asp-action="Create" class="btn btn-primary">＋ Neues Ticket</a>
 </div>
 
-<div class="card content-card">
-    <div class="card-body p-0">
+<section class="card content-card dashboard-ticket-card">
+    <div class="card-body p-3 p-lg-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
+            <div>
+                <h2 class="h4 mb-1">Alle Tickets</h2>
+                <span class="text-blue">@Model.Count() von @anzahlAlleTickets Ticket(s)</span>
+            </div>
+
+            @* Der GET-Filter übergibt den Status an TicketController.Index. *@
+            <form method="get" class="dashboard-filter">
+                <label for="status" class="form-label small fw-semibold">Status</label>
+                <div class="d-flex gap-2">
+                    <select id="status" name="status" class="form-select">
+                        <option value="">Alle Status</option>
+                        @foreach (var status in Enum.GetValues<TicketStatus>())
+                        {
+                            if (ausgewaehlterStatus == status.ToString())
+                            {
+                                <option value="@status" selected>@(status == TicketStatus.InBearbeitung ? "In Bearbeitung" : status)</option>
+                            }
+                            else
+                            {
+                                <option value="@status">@(status == TicketStatus.InBearbeitung ? "In Bearbeitung" : status)</option>
+                            }
+                        }
+                    </select>
+                    <button type="submit" class="btn btn-outline-primary">Filtern</button>
+                </div>
+            </form>
+        </div>
+
         @if (!Model.Any())
         {
-            <div class="p-4 text-center text-secondary">Noch keine Tickets vorhanden.</div>
+            <div class="alert alert-light border mb-0">Für diesen Status sind keine Tickets vorhanden.</div>
         }
         else
         {
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+                <table class="table dashboard-table align-middle mb-0">
                     <thead>
                         <tr>
-                            <th class="ps-4">Nr.</th>
+                            <th>Nr.</th>
                             <th>Titel</th>
                             <th>Erstellt von</th>
                             <th>Kategorie</th>
                             <th>Status</th>
                             <th>Erstellt am</th>
-                            <th class="text-end pe-4">Aktion</th>
+                            <th>Aktion</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var ticket in Model)
                         {
+                            // Die CSS-Klasse bestimmt die Farbe des Status.
+                            var statusKlasse = "ticket-status-open";
+                            if (ticket.Status == TicketStatus.InBearbeitung)
+                            {
+                                statusKlasse = "ticket-status-progress";
+                            }
+                            else if (ticket.Status == TicketStatus.Abgeschlossen)
+                            {
+                                statusKlasse = "ticket-status-complete";
+                            }
+
                             <tr>
-                                <td class="ps-4 text-secondary">@ticket.TicketId</td>
-                                <td><strong>@ticket.Titel</strong></td>
+                                <td class="text-black">@ticket.TicketId</td>
+                                <td>
+                                    <a asp-controller="Ticket" asp-action="Details" asp-route-id="@ticket.TicketId" class="ticket-title-link text-black">
+                                        @ticket.Titel
+                                    </a>
+                                </td>
                                 <td>@ticket.ErstelltVon</td>
-                                <td>@(ticket.KategorieId.HasValue && kategorien.TryGetValue(ticket.KategorieId.Value, out var kategorieName) ? kategorieName : "Nicht zugeordnet")</td>
-                                <td><span class="badge-status">@ticket.Status</span></td>
-                                <td>@ticket.Erstellungsdatum.ToString("dd.MM.yyyy HH:mm")</td>
-                                <td class="text-end pe-4">
+                                <td>@(ticket.Kategorie?.KategorieName ?? "–")</td>
+                                <td>
+                                    <span class="ticket-status @statusKlasse">
+                                        @(ticket.Status == TicketStatus.InBearbeitung ? "In Bearbeitung" : ticket.Status)
+                                    </span>
+                                </td>
+                                <td>@ticket.Erstellungsdatum.ToString("dd.MM.yyyy")</td>
+                                @* Öffnet die vorhandene Detailseite dieses Tickets. *@
+                                <td>
                                     <a asp-controller="Ticket" asp-action="Details" asp-route-id="@ticket.TicketId" class="btn btn-sm btn-outline-primary">Details</a>
                                 </td>
                             </tr>
@@ -58,4 +106,4 @@
             </div>
         }
     </div>
-</div>
+</section>
