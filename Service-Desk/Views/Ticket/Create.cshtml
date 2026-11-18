@@ -1,14 +1,15 @@
 @model Service_Desk.Models.Ticket
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Ticket erstellen";
 }
 <h1>Ticket erstellen</h1>
 
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        @* Das Formular sendet die Eingaben an die POST-Methode im TicketController. *@
+        <form asp-controller="Ticket" asp-action="Create" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
             <div class="form-group">
@@ -38,8 +39,11 @@
             </div>
 
             <div class="mb-3">
-                <label for="Beschreibung" class="form-label">Nachricht</label>
-                <textarea class="form-control" id="Beschreibung" rows="4"></textarea>
+                @* asp-for erzeugt auch name="Beschreibung", damit der Text beim Speichern ankommt. *@
+                <label asp-for="Beschreibung" class="form-label">Nachricht</label>
+                <textarea asp-for="Beschreibung" class="form-control" rows="4"></textarea>
+                @* Zeigt z. B. die Fehlermeldung bei einer leeren Beschreibung an. *@
+                <span asp-validation-for="Beschreibung" class="text-danger"></span>
             </div>
 
             
@@ -53,6 +57,11 @@
 <br />
 
 <div>
-    <!-- NAVIGATION: Vom Ticketformular geht es zurück zur zentralen Übersicht im Dashboard. -->
-    <a asp-controller="Home" asp-action="Index">Zurück zur Startseite</a>
+    @* Zurück zur Ticketliste, zu der auch nach dem Speichern weitergeleitet wird. *@
+    <a asp-controller="Ticket" asp-action="Index">Zurück zur Ticketübersicht</a>
 </div>
+
+@section Scripts {
+    @* Prüft Pflichtfelder schon im Browser, genauso wie im Support-Formular. *@
+    <partial name="_ValidationScriptsPartial" />
+}

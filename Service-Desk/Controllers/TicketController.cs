@@ -14,9 +14,25 @@ public class TicketController : Controller
     }
 
     // GET: TICKETS
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(string? status)
     {
-        return View(await _context.Tickets.ToListAsync());
+        // Die Kategorie wird zusammen mit den Tickets geladen.
+        var tickets = await _context.Tickets
+            .Include(ticket => ticket.Kategorie)
+            .OrderByDescending(ticket => ticket.Erstellungsdatum)
+            .ToListAsync();
+
+        // Die Gesamtzahl merken, bevor die Liste gefiltert wird.
+        ViewBag.AnzahlAlleTickets = tickets.Count;
+        ViewBag.AusgewaehlterStatus = status ?? "";
+
+        // Ohne Status werden alle Tickets angezeigt.
+        if (Enum.TryParse<TicketStatus>(status, out var statusFilter))
+        {
+            tickets = tickets.Where(ticket => ticket.Status == statusFilter).ToList();
+        }
+
+        return View(tickets);
     }
 
     // GET: TICKETS/Details/5
@@ -96,7 +112,8 @@ public class TicketController : Controller
 
             _context.Add(ticket);
             await _context.SaveChangesAsync();
-            return RedirectToAction("Index", "Home");
+            // Nach dem Speichern wieder die Ticketübersicht anzeigen.
+            return RedirectToAction("Index");
         }
         return View(ticket);
     }

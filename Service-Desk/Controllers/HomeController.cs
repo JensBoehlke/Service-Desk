@@ -17,9 +17,10 @@ namespace Service_Desk.Controllers
 
         }
 
+        // Alte Links auf Home/Ticket führen ebenfalls zur Ticketübersicht.
         public IActionResult Ticket()
         {
-            return View();
+            return RedirectToAction("Index", "Ticket");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

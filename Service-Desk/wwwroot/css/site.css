@@ -27,6 +27,15 @@ body {
 a { color: var(--desk-green); }
 a:hover { color: var(--desk-green-dark); }
 
+.home-service-desk-label {
+    display: inline-block;
+    color: var(--desk-green-dark);
+    font-size: clamp(1.25rem, 5vw, 2.5rem);
+    font-weight: 700;
+    letter-spacing: .28em;
+    transform: scaleY(.7);
+}
+
 /* NAVIGATION: Feste Seitenleiste links; eine separate Kopfleiste wird nicht mehr benötigt. */
 .app-shell {
     display: flex;
@@ -42,7 +51,8 @@ a:hover { color: var(--desk-green-dark); }
     padding: 1.25rem 1rem;
     flex-direction: column;
     color: #fff;
-    background: var(--desk-green-dark);
+    /* Dunkles Tannengrün für die Navigationsleiste. */
+    background: #102b20;
 }
 
 .app-page {
@@ -64,6 +74,14 @@ a:hover { color: var(--desk-green-dark); }
 }
 
 .sidebar-brand:hover { color: #fff; }
+
+.app-sidebar .company-logo {
+    /* Die weiße Kontur folgt der Kartenform im transparenten PNG. */
+    filter: drop-shadow(0.6px 0 0 #fff)
+            drop-shadow(-0.6px 0 0 #fff)
+            drop-shadow(0 0.6px 0 #fff)
+            drop-shadow(0 -0.6px 0 #fff);
+}
 
 .brand-mark {
     display: inline-flex;
@@ -97,13 +115,17 @@ a:hover { color: var(--desk-green-dark); }
 }
 
 .sidebar-link:hover,
-.sidebar-link:focus,
-.sidebar-link.active {
+.sidebar-link:focus {
     color: #fff;
-    background: rgba(255, 255, 255, .12);
+    background: #304a30;
 }
 
-.sidebar-link.active { font-weight: 650; }
+/* Ein gedecktes, gelbliches Grün markiert den ausgewählten Bereich. */
+.sidebar-link.active {
+    color: #102b20;
+    background: #c6ca94;
+    font-weight: 650;
+}
 
 .nav-icon {
     display: inline-flex;
@@ -288,6 +310,8 @@ a:hover { color: var(--desk-green-dark); }
     height: 2.7rem;
     margin-left: auto;
     flex: 1;
+    /* Der leere Balkenbereich zeigt die Hintergrundfarbe der jeweiligen Statuskarte. */
+    background-color: transparent;
 }
 
 .status-card-priorities > .progress {
