@@ -1,0 +1,588 @@
+/* LAYOUT: Wenige eigene Regeln ergänzen Bootstrap; Grün bleibt die Grundfarbe. */
+:root {
+    --desk-green: #176b45;
+    --desk-green-dark: #0f5132;
+    --desk-green-light: #e8f5ee;
+    --desk-background: #f5f8f6;
+    --desk-border: #dce8e1;
+    --desk-text: #20352a;
+}
+
+html {
+    font-size: 14px;
+    min-height: 100%;
+}
+
+@media (min-width: 768px) {
+    html { font-size: 16px; }
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+    color: var(--desk-text);
+    background: var(--desk-background);
+}
+
+a { color: var(--desk-green); }
+a:hover { color: var(--desk-green-dark); }
+
+.home-service-desk-label {
+    display: inline-block;
+    color: var(--desk-green-dark);
+    font-size: clamp(1.25rem, 5vw, 2.5rem);
+    font-weight: 700;
+    letter-spacing: .28em;
+    transform: scaleY(.7);
+}
+
+/* NAVIGATION: Feste Seitenleiste links; eine separate Kopfleiste wird nicht mehr benötigt. */
+.app-shell {
+    display: flex;
+    min-height: 100vh;
+}
+
+.app-sidebar {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex: 0 0 240px;
+    height: 100vh;
+    padding: 1.25rem 1rem;
+    flex-direction: column;
+    color: #fff;
+    /* Dunkles Tannengrün für die Navigationsleiste. */
+    background: #102b20;
+}
+
+.app-page {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+}
+
+.sidebar-brand {
+    display: flex;
+    margin-bottom: 2rem;
+    align-items: center;
+    gap: .75rem;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.sidebar-brand:hover { color: #fff; }
+
+.app-sidebar .company-logo {
+    /* Die weiße Kontur folgt der Kartenform im transparenten PNG. */
+    filter: drop-shadow(0.6px 0 0 #fff)
+            drop-shadow(-0.6px 0 0 #fff)
+            drop-shadow(0 0.6px 0 #fff)
+            drop-shadow(0 -0.6px 0 #fff);
+}
+
+.brand-mark {
+    display: inline-flex;
+    width: 2.25rem;
+    height: 2.25rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: .65rem;
+    color: var(--desk-green-dark);
+    background: #fff;
+    font-size: .8rem;
+    letter-spacing: .04em;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+}
+
+.sidebar-link {
+    display: flex;
+    min-height: 3rem;
+    padding: .6rem .75rem;
+    align-items: center;
+    gap: .75rem;
+    color: rgba(255, 255, 255, .82);
+    border-radius: .65rem;
+    text-decoration: none;
+    transition: color .2s ease, background-color .2s ease;
+}
+
+.sidebar-link:hover,
+.sidebar-link:focus {
+    color: #fff;
+    background: #304a30;
+}
+
+/* Ein gedecktes, gelbliches Grün markiert den ausgewählten Bereich. */
+.sidebar-link.active {
+    color: #102b20;
+    background: #c6ca94;
+    font-weight: 650;
+}
+
+.nav-icon {
+    display: inline-flex;
+    width: 2rem;
+    height: 2rem;
+    flex: 0 0 2rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: .55rem;
+    color: var(--desk-green-dark);
+    background: #fff;
+    font-size: .75rem;
+    font-weight: 800;
+}
+
+.sidebar-footer {
+    display: flex;
+    margin-top: auto;
+    padding: .75rem;
+    align-items: center;
+    gap: .75rem;
+    color: rgba(255, 255, 255, .72);
+    font-size: .85rem;
+}
+
+.main-content { flex: 1; }
+
+.app-footer {
+    color: #5d7166;
+    background: #fff;
+    border-top: 1px solid var(--desk-border);
+}
+
+/* STARTSEITE: Der grüne Kopfbereich ist bewusst schlicht und ohne Zusatzbibliothek. */
+.hero-card {
+    padding: clamp(2rem, 5vw, 4.5rem);
+    overflow: hidden;
+    color: #fff;
+    background: linear-gradient(135deg, var(--desk-green-dark), var(--desk-green));
+    border-radius: 1.25rem;
+    box-shadow: 0 1rem 2.5rem rgba(15, 81, 50, .16);
+}
+
+.hero-card .lead { color: rgba(255, 255, 255, .82); }
+
+.hero-icon {
+    display: inline-flex;
+    width: 8rem;
+    height: 8rem;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(255, 255, 255, .36);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .1);
+    font-size: 4rem;
+}
+
+.section-label {
+    color: var(--desk-green);
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.stat-card,
+.action-card,
+.content-card {
+    border: 1px solid var(--desk-border);
+    border-radius: 1rem;
+    box-shadow: 0 .35rem 1.25rem rgba(32, 53, 42, .05);
+}
+
+.stat-card { border-left: .3rem solid var(--desk-green); }
+
+.stat-number,
+.stat-label { display: block; }
+
+.stat-number {
+    color: var(--desk-green-dark);
+    font-size: 2rem;
+    font-weight: 750;
+}
+
+.stat-label { color: #617268; }
+
+.action-card { transition: transform .2s ease, box-shadow .2s ease; }
+.action-card:hover { transform: translateY(-3px); box-shadow: 0 .75rem 2rem rgba(32, 53, 42, .1); }
+
+.action-icon {
+    display: inline-flex;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin-bottom: 1rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: .75rem;
+    color: var(--desk-green-dark);
+    background: var(--desk-green-light);
+    font-size: 1.35rem;
+    font-weight: 700;
+}
+
+/* BOOTSTRAP:  */
+.btn-primary {
+    background-color: var(--desk-green);
+    border-color: var(--desk-green);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: var(--desk-green-dark);
+    border-color: var(--desk-green-dark);
+}
+
+.btn-outline-primary {
+    color: var(--desk-green);
+    border-color: var(--desk-green);
+}
+
+.btn-outline-primary:hover {
+    color: #fff;
+    background-color: var(--desk-green);
+    border-color: var(--desk-green);
+}
+
+
+.form-control:focus,
+.form-select:focus,
+.btn:focus {
+    border-color: #63a887;
+    box-shadow: 0 0 0 .25rem rgba(23, 107, 69, .18);
+}
+
+.table thead th {
+    color: #486055;
+    background: #eef5f1;
+    border-bottom-color: var(--desk-border);
+    white-space: nowrap;
+}
+
+.badge-status {
+    display: inline-block;
+    padding: .4rem .65rem;
+    border-radius: 50rem;
+    color: var(--desk-green-dark);
+    background: var(--desk-green-light);
+    font-size: .78rem;
+    font-weight: 650;
+}
+
+/* DASHBOARD: */
+.status-card {
+    display: flex;
+    min-height: 4.5rem;
+    padding: .7rem 1rem;
+    align-items: center;
+    gap: .75rem;
+    justify-content: flex-start;
+    border: 1px solid transparent;
+    border-radius: .85rem;
+    font-weight: 600;
+}
+
+.status-card-icon {
+    flex: 0 0 auto;
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.status-card-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.status-card-with-priorities .status-card-content {
+    flex: 0 0 8rem;
+}
+
+.status-card-priorities {
+    min-width: 0;
+    height: 2.7rem;
+    margin-left: auto;
+    flex: 1;
+    /* Der leere Balkenbereich zeigt die Hintergrundfarbe der jeweiligen Statuskarte. */
+    background-color: transparent;
+}
+
+.status-card-priorities > .progress {
+    height: 100%;
+}
+
+.status-card-number {
+    font-size: 1.4rem;
+    font-weight: 750;
+    line-height: 1.1;
+}
+
+.status-card-open {
+    color: #174f91;
+    background: #deebff;
+    border-color: #c9ddf8;
+}
+
+.status-card-progress {
+    color: #805c08;
+    background: #fff1c9;
+    border-color: #f2dfaa;
+}
+
+.status-card-all {
+    color: #315a6b;
+    background: #e5f0f4;
+    border-color: #cee1e8;
+}
+
+.status-card-complete {
+    color: #236641;
+    background: #dff3e7;
+    border-color: #c9e8d5;
+}
+
+@media (max-width: 767.98px) {
+    .status-card-with-priorities { flex-wrap: wrap; }
+
+    .status-card-with-priorities .status-card-content { flex: 1; }
+
+    .status-card-priorities {
+        margin-left: 0;
+        flex-basis: 100%;
+    }
+}
+
+.dashboard-ticket-card { overflow: hidden; }
+.dashboard-filter { width: min(100%, 22rem); }
+
+.dashboard-table tbody tr:nth-child(odd) { background: #f7faf8; }
+.dashboard-table tbody tr:hover { background: #eef5f1; }
+
+.ticket-title-link {
+    color: var(--desk-green-dark);
+    font-weight: 650;
+    text-decoration: none;
+}
+
+.ticket-title-link:hover { text-decoration: underline; }
+
+.ticket-status {
+    display: inline-block;
+    min-width: 8rem;
+    padding: .35rem .65rem;
+    border-radius: .35rem;
+    text-align: center;
+    font-size: .8rem;
+    font-weight: 700;
+}
+
+.ticket-status-open {
+    color: #174f91;
+    background: #deebff;
+}
+
+.ticket-status-progress {
+    color: #805c08;
+    background: #fff1c9;
+}
+
+.ticket-status-complete {
+    color: #236641;
+    background: #dff3e7;
+}
+
+/* Bestehende Eingabefelder bleiben nutzbar und werden responsiv. */
+.textarea {
+    width: 100%;
+    min-height: 150px;
+    resize: vertical;
+}
+
+@media (max-width: 767.98px) {
+    .hero-icon { display: none; }
+
+    /* NAVIGATION: Auf kleinen Bildschirmen bleibt die Leiste links, zeigt aber nur Kürzel. */
+    .app-sidebar {
+        flex-basis: 76px;
+        width: 76px;
+        padding-inline: .65rem;
+        align-items: center;
+    }
+
+    .sidebar-brand {
+        justify-content: center;
+    }
+
+    .sidebar-text { display: none; }
+
+    .sidebar-link,
+    .sidebar-footer {
+        padding-inline: .35rem;
+        justify-content: center;
+    }
+    .sidebar-brand.sidebar-brand--company {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #a8edc5;
+    }
+
+    .company-brand-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .company-logo {
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+        object-fit: contain;
+    }
+
+    .company-name {
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1.15;
+    }
+
+    .company-subtitle {
+        font-size: 14px;
+        font-weight: 400;
+    }
+    .company-brand-row .company-name {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        line-height: 1.15;
+    }
+}
+
+
+
+/*Startseite Überschrift Wie können wir Ihnen helfen ?*/
+#ueberschrift {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    text-decoration-color: white;
+    height: 50px;
+    margin-top: 0px;
+    margin-left: 0px;
+    margin-right: 0px;
+    bottom: 0px;
+    padding: 0px;
+    background-color: #f5f8f6;
+    font-size: 20px;
+}
+/*Startseite Überschrift Ende*/
+
+/* Text zu Wie können wir Ihnen helfen ?  */
+#textstartseite {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    text-decoration-color: white;
+    height: 0px;
+    margin-top: 80px;
+    margin-left: 0px;
+    margin-right: 0px;
+    padding: 0px;
+    background-color: #f5f8f6;
+}
+
+/* Text zu Wie können wir Ihnen helfen ? Ende  */
+
+
+/*Laufschrifteinstellung für Startseite*/
+#laufschrift {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #FFFFFF;
+    height: 20px;
+    margin-top: 150px;
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-bottom: 0px;
+    padding: 25px;
+    background-color: red;
+    font-size: 20px;
+    
+}
+/*Laufschrifteinstellung für Startseite Ende*/
+
+/*Button Ticket erstellen für Startseite*/
+#ticket {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    text-align: center;
+    color: #FFFFFF;
+    height: 20px;
+    margin-top: 100px;
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-bottom: 0px;
+    padding: 0px;
+    background-color: #f5f8f6;
+    font-size: 20px;
+}
+/*Button Ticket erstellen für Startseite Ende*/
+
+/* TEAM-AUSLASTUNG: Avatar, Balken und Stufen-Badges für den Admin-Bereich. */
+.team-avatar {
+    display: inline-flex;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex: 0 0 2.5rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: var(--desk-green-dark);
+    background: var(--desk-green-light);
+    font-size: .85rem;
+    font-weight: 700;
+}
+
+.load-track {
+    height: .65rem;
+    background: #e9f0ec;
+    border-radius: 50rem;
+}
+
+.load-track .progress-bar { border-radius: 50rem; }
+.load-percent { min-width: 3rem; text-align: right; }
+
+.load-low { background-color: #2f9e6e; }
+.load-mid { background-color: #e0a526; }
+.load-high { background-color: #d9534f; }
+
+.load-badge {
+    display: inline-block;
+    min-width: 5.5rem;
+    padding: .35rem .65rem;
+    border-radius: 50rem;
+    text-align: center;
+    font-size: .78rem;
+    font-weight: 700;
+}
+
+.load-badge-low { color: #236641; background: #dff3e7; }
+.load-badge-mid { color: #805c08; background: #fff1c9; }
+.load-badge-high { color: #8a1f1f; background: #fde2e2; }

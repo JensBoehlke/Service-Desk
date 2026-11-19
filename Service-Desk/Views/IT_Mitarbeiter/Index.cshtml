@@ -10,6 +10,39 @@
         .Where(ticket => ticket.MitarbeiterId.HasValue)
         .GroupBy(ticket => ticket.MitarbeiterId!.Value)
         .ToDictionary(group => group.Key, group => group.Count());
+
+    // AUSLASTUNG: Aktive Tickets = Status Offen oder In Bearbeitung.
+    // Kapazität = so viele aktive Tickets pro Person bedeuten 100 % (hier einfach änderbar).
+    const int kapazitaet = 4;
+    var aktiveTickets = Database.Tickets
+        .Where(ticket => ticket.MitarbeiterId.HasValue
+                         && ticket.Status != Service_Desk.Models.TicketStatus.Abgeschlossen)
+        .Select(ticket => new { MitarbeiterId = ticket.MitarbeiterId!.Value, ticket.Status })
+        .ToList();
+
+    var auslastung = Model
+        .Select(mitarbeiter =>
+        {
+            var eigene = aktiveTickets.Where(ticket => ticket.MitarbeiterId == mitarbeiter.MitarbeiterId).ToList();
+            var namensteile = mitarbeiter.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            return new
+            {
+                mitarbeiter.Name,
+                Initialen = namensteile.Length == 0 ? "?" : string.Concat(namensteile.Take(2).Select(teil => char.ToUpper(teil[0]))),
+                Offen = eigene.Count(ticket => ticket.Status == Service_Desk.Models.TicketStatus.Offen),
+                InBearbeitung = eigene.Count(ticket => ticket.Status == Service_Desk.Models.TicketStatus.InBearbeitung),
+                Aktiv = eigene.Count,
+                Prozent = eigene.Count * 100 / kapazitaet
+            };
+        })
+        .OrderByDescending(zeile => zeile.Aktiv)
+        .ThenBy(zeile => zeile.Name)
+        .ToList();
+
+    var teamAktiv = auslastung.Sum(zeile => zeile.Aktiv);
+    var teamProzent = auslastung.Count == 0 ? 0 : teamAktiv * 100 / (auslastung.Count * kapazitaet);
+    var nichtZugewiesen = Database.Tickets.Count(ticket => !ticket.MitarbeiterId.HasValue
+                                                          && ticket.Status != Service_Desk.Models.TicketStatus.Abgeschlossen);
 }
 
 <!-- TEAM: Die sechs Testpersonen werden in einer einfachen, gut lesbaren Liste gezeigt. -->
@@ -18,6 +51,81 @@
     <!-- ADMIN: Der Bereich bündelt Mitarbeitende und Kategorien an einer Stelle. -->
     <h1 class="h2 mb-1">Admin-Bereich</h1>
     <p class="text-secondary mb-0">Drei Frauen und drei Männer stehen für die Bearbeitung der Test-Tickets bereit.</p>
+</div>
+
+<!-- AUSLASTUNG: Kennzahlen oben, darunter pro Person ein Balken mit den aktiven Tickets. -->
+<div class="card content-card mb-4">
+    <div class="card-header bg-white border-0 p-4 pb-2">
+        <h2 class="h5 mb-1">Team-Auslastung</h2>
+        <p class="text-secondary small mb-0">Berücksichtigt werden offene Tickets und Tickets in Bearbeitung. Als voll gelten @kapazitaet aktive Tickets pro Person.</p>
+    </div>
+    <div class="card-body p-4 pt-3">
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card stat-card h-100"><div class="card-body py-3">
+                    <span class="stat-number">@teamAktiv</span>
+                    <span class="stat-label">Aktive Tickets im Team</span>
+                </div></div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stat-card h-100"><div class="card-body py-3">
+                    <span class="stat-number">@teamProzent %</span>
+                    <span class="stat-label">Durchschnittliche Auslastung</span>
+                </div></div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stat-card h-100"><div class="card-body py-3">
+                    <span class="stat-number">@nichtZugewiesen</span>
+                    <span class="stat-label">Aktive Tickets ohne Bearbeiter</span>
+                </div></div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Mitarbeiter</th>
+                        <th style="min-width: 12rem;">Auslastung</th>
+                        <th class="text-center">Aktive Tickets</th>
+                        <th class="text-end">Stufe</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var zeile in auslastung)
+                    {
+                        var stufe = zeile.Prozent >= 100 ? "high" : zeile.Prozent >= 50 ? "mid" : "low";
+                        var stufeText = zeile.Prozent >= 100 ? "Hoch" : zeile.Prozent >= 50 ? "Mittel" : "Niedrig";
+                        var balkenKlasse = "progress-bar load-" + stufe;
+                        var badgeKlasse = "load-badge load-badge-" + stufe;
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="team-avatar">@zeile.Initialen</span>
+                                    <div>
+                                        <strong class="d-block">@zeile.Name</strong>
+                                        <small class="text-secondary">@zeile.Offen offen · @zeile.InBearbeitung in Bearbeitung</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="progress load-track flex-grow-1" role="progressbar"
+                                         aria-label="Auslastung von @zeile.Name"
+                                         aria-valuenow="@Math.Min(100, zeile.Prozent)" aria-valuemin="0" aria-valuemax="100">
+                                        <div class="@balkenKlasse" style="width: @(Math.Min(100, zeile.Prozent))%;"></div>
+                                    </div>
+                                    <span class="fw-semibold text-nowrap load-percent">@zeile.Prozent %</span>
+                                </div>
+                            </td>
+                            <td class="text-center">@zeile.Aktiv von @kapazitaet</td>
+                            <td class="text-end"><span class="@badgeKlasse">@stufeText</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <div class="row g-4">

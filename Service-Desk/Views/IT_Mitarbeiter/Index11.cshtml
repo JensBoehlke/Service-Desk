@@ -1,0 +1,223 @@
+@model IEnumerable<Service_Desk.Models.IT_Mitarbeiter>
+@inject Service_Desk.Models.ServiceDeskContext Database
+
+@{
+    ViewData["Title"] = "Admin-Bereich";
+    var kategorien = ViewBag.Kategorien as IEnumerable<Service_Desk.Models.Kategorie>
+                     ?? Enumerable.Empty<Service_Desk.Models.Kategorie>();
+    // TESTDATEN: Ticketanzahlen werden in einem Schritt geladen; die Controller bleiben unverändert.
+    var ticketAnzahlen = Database.Tickets
+        .Where(ticket => ticket.MitarbeiterId.HasValue)
+        .GroupBy(ticket => ticket.MitarbeiterId!.Value)
+        .ToDictionary(group => group.Key, group => group.Count());
+
+    // AUSLASTUNG: Als aktiv zählen Tickets mit Status Offen oder In Bearbeitung.
+    // Kapazität = Anzahl aktiver Tickets, die als 100 % Auslastung gelten (hier einfach anpassbar).
+    const int kapazitaet = 4;
+    var auslastungProMitarbeiter = Database.Tickets
+        .Where(ticket => ticket.MitarbeiterId.HasValue)
+        .GroupBy(ticket => ticket.MitarbeiterId!.Value)
+        .Select(group => new
+        {
+            MitarbeiterId = group.Key,
+            Offen = group.Count(ticket => ticket.Status == Service_Desk.Models.TicketStatus.Offen),
+            InBearbeitung = group.Count(ticket => ticket.Status == Service_Desk.Models.TicketStatus.InBearbeitung),
+            Abgeschlossen = group.Count(ticket => ticket.Status == Service_Desk.Models.TicketStatus.Abgeschlossen),
+            HochAktiv = group.Count(ticket => ticket.Status != Service_Desk.Models.TicketStatus.Abgeschlossen
+                                              && ticket.Prioritaet == Service_Desk.Models.Prioritaet.Hoch)
+        })
+        .ToDictionary(eintrag => eintrag.MitarbeiterId);
+
+    var auslastung = Model
+        .Select(mitarbeiter =>
+        {
+            auslastungProMitarbeiter.TryGetValue(mitarbeiter.MitarbeiterId, out var daten);
+            var offen = daten?.Offen ?? 0;
+            var inBearbeitung = daten?.InBearbeitung ?? 0;
+            var aktiv = offen + inBearbeitung;
+            return new
+            {
+                mitarbeiter.Name,
+                Offen = offen,
+                InBearbeitung = inBearbeitung,
+                Abgeschlossen = daten?.Abgeschlossen ?? 0,
+                HochAktiv = daten?.HochAktiv ?? 0,
+                Aktiv = aktiv,
+                Prozent = (int)Math.Round(aktiv * 100.0 / kapazitaet)
+            };
+        })
+        .OrderByDescending(eintrag => eintrag.Aktiv)
+        .ThenBy(eintrag => eintrag.Name)
+        .ToList();
+
+    var teamAktiv = auslastung.Sum(eintrag => eintrag.Aktiv);
+    var teamProzent = auslastung.Count == 0 ? 0 : (int)Math.Round(teamAktiv * 100.0 / (auslastung.Count * kapazitaet));
+    var nichtZugewiesen = Database.Tickets.Count(ticket => !ticket.MitarbeiterId.HasValue
+                                                          && ticket.Status != Service_Desk.Models.TicketStatus.Abgeschlossen);
+
+    // Farbe nach Auslastung: grün = entspannt, gelb = hoch, rot = ausgelastet oder überlastet.
+    string AuslastungFarbe(int prozent) => prozent >= 100 ? "danger" : prozent >= 75 ? "warning" : "success";
+}
+
+<!-- TEAM: Die sechs Testpersonen werden in einer einfachen, gut lesbaren Liste gezeigt. -->
+<div class="mb-4">
+    <p class="section-label mb-1">Mitarbeitende</p>
+    <!-- ADMIN: Der Bereich bündelt Mitarbeitende und Kategorien an einer Stelle. -->
+    <h1 class="h2 mb-1">Admin-Bereich</h1>
+    <p class="text-secondary mb-0">Drei Frauen und drei Männer stehen für die Bearbeitung der Test-Tickets bereit.</p>
+</div>
+
+<!-- AUSLASTUNG: Zeigt pro Teammitglied, wie viele aktive Tickets (Offen + In Bearbeitung) gerade anliegen. -->
+<div class="card content-card mb-4">
+    <div class="card-header bg-white border-0 p-4 pb-2 d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div>
+            <h2 class="h5 mb-0">Team-Auslastung</h2>
+            <small class="text-secondary">100 % entsprechen @kapazitaet aktiven Tickets pro Person</small>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <span class="badge-status">Team: @teamAktiv aktive Tickets (@teamProzent %)</span>
+            @if (nichtZugewiesen > 0)
+            {
+                <span class="badge text-bg-warning align-self-center">@nichtZugewiesen nicht zugewiesen</span>
+            }
+        </div>
+    </div>
+    <div class="card-body pt-2">
+        @if (!auslastung.Any())
+        {
+            <p class="text-secondary mb-0">Noch keine Teammitglieder vorhanden.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th style="min-width: 14rem;">Auslastung</th>
+                            <th class="text-center">Offen</th>
+                            <th class="text-center">In Bearbeitung</th>
+                            <th class="text-center">Hohe Prio</th>
+                            <th class="text-center">Abgeschlossen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var eintrag in auslastung)
+                        {
+                            var prozentKlasse = "text-" + AuslastungFarbe(eintrag.Prozent) + "-emphasis";
+                            // Der Balken wächst bis zur Kapazität; bei Überlastung wird er auf die Gesamtbreite gestaucht.
+                            var bezug = Math.Max(kapazitaet, eintrag.Aktiv);
+                            var invariant = System.Globalization.CultureInfo.InvariantCulture;
+                            var breiteOffen = (eintrag.Offen * 100.0 / bezug).ToString("0.##", invariant);
+                            var breiteBearbeitung = (eintrag.InBearbeitung * 100.0 / bezug).ToString("0.##", invariant);
+                            <tr>
+                                <td><strong>@eintrag.Name</strong></td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="progress-stacked flex-grow-1" style="height: 1.1rem;"
+                                             role="img"
+                                             aria-label="@eintrag.Name: @eintrag.Prozent % Auslastung, @eintrag.Aktiv aktive Tickets">
+                                            <div class="progress" style="width: @(breiteOffen)%;" title="Offen: @eintrag.Offen">
+                                                <div class="progress-bar bg-info"></div>
+                                            </div>
+                                            <div class="progress" style="width: @(breiteBearbeitung)%;" title="In Bearbeitung: @eintrag.InBearbeitung">
+                                                <div class="progress-bar bg-warning"></div>
+                                            </div>
+                                        </div>
+                                        <strong class="@prozentKlasse text-nowrap" style="min-width: 3rem; text-align: right;">@eintrag.Prozent %</strong>
+                                    </div>
+                                </td>
+                                <td class="text-center">@eintrag.Offen</td>
+                                <td class="text-center">@eintrag.InBearbeitung</td>
+                                <td class="text-center">
+                                    @if (eintrag.HochAktiv > 0)
+                                    {
+                                        <span class="badge text-bg-danger">@eintrag.HochAktiv</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-secondary">0</span>
+                                    }
+                                </td>
+                                <td class="text-center text-secondary">@eintrag.Abgeschlossen</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="d-flex flex-wrap gap-3 mt-3 small text-secondary">
+                <span><span class="badge bg-info">&nbsp;</span> Offen</span>
+                <span><span class="badge bg-warning">&nbsp;</span> In Bearbeitung</span>
+                <span>Farbe der Prozentzahl: grün unter 75 %, gelb ab 75 %, rot ab 100 %</span>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card content-card h-100">
+            <div class="card-header bg-white border-0 p-4 pb-2"><h2 class="h5 mb-0">Teamübersicht</h2></div>
+            <div class="card-body pt-2">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead><tr><th>Name</th><th>Tickets</th><th class="text-end">Aktionen</th></tr></thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td><strong>@item.Name</strong></td>
+                                    <td><span class="badge-status">@(ticketAnzahlen.GetValueOrDefault(item.MitarbeiterId)) Ticket(s)</span></td>
+                                    <td class="text-end">
+                                        <a asp-action="Edit" asp-route-mitarbeiterid="@item.MitarbeiterId" class="btn btn-sm btn-outline-secondary">Bearbeiten</a>
+                                        <a asp-action="Delete" asp-route-mitarbeiterid="@item.MitarbeiterId" class="btn btn-sm btn-outline-danger">Löschen</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- TEAM: Vorhandenes Create-Verhalten bleibt erhalten; nur die Darstellung wurde vereinfacht. -->
+        <div class="card content-card mb-4">
+            <div class="card-body p-4">
+                <h2 class="h5 mb-3">Teammitglied hinzufügen</h2>
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+                    <label for="Name" class="form-label">Name</label>
+                    <input type="text" id="Name" name="Name" class="form-control mb-3" maxlength="50" required />
+                    <button type="submit" class="btn btn-primary w-100">Hinzufügen</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card content-card">
+            <div class="card-header bg-white border-0 p-4 pb-2 d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">Kategorien</h2>
+                <a asp-controller="Kategorie" asp-action="Create" class="btn btn-sm btn-primary">Neue Kategorie</a>
+            </div>
+            <div class="card-body pt-2">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle mb-0">
+                        <tbody>
+                            @foreach (var kategorie in kategorien)
+                            {
+                                <tr>
+                                    <td><strong>@kategorie.KategorieName</strong></td>
+                                    <td class="text-end text-nowrap">
+                                        <a asp-controller="Kategorie" asp-action="Edit" asp-route-kategorieid="@kategorie.KategorieId" class="btn btn-sm btn-outline-secondary">Bearbeiten</a>
+                                        <a asp-controller="Kategorie" asp-action="Delete" asp-route-kategorieid="@kategorie.KategorieId" class="btn btn-sm btn-outline-danger">Löschen</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

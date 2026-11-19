@@ -1,0 +1,131 @@
+@model IEnumerable<Service_Desk.Models.IT_Mitarbeiter>
+@inject Service_Desk.Models.ServiceDeskContext Database
+
+@{
+    ViewData["Title"] = "Admin-Bereich";
+    var kategorien = ViewBag.Kategorien as IEnumerable<Service_Desk.Models.Kategorie>
+                     ?? Enumerable.Empty<Service_Desk.Models.Kategorie>();
+    // TESTDATEN: Ticketanzahlen werden in einem Schritt geladen; die Controller bleiben unverändert.
+    var ticketAnzahlen = Database.Tickets
+        .Where(ticket => ticket.MitarbeiterId.HasValue)
+        .GroupBy(ticket => ticket.MitarbeiterId!.Value)
+        .ToDictionary(group => group.Key, group => group.Count());
+
+    // AUSLASTUNG: Aktive Tickets = Status Offen oder In Bearbeitung.
+    // Kapazität = so viele aktive Tickets bedeuten 100 % (hier einfach änderbar).
+    const int kapazitaet = 4;
+    var aktiveTickets = Database.Tickets
+        .Where(ticket => ticket.MitarbeiterId.HasValue
+                         && ticket.Status != Service_Desk.Models.TicketStatus.Abgeschlossen)
+        .GroupBy(ticket => ticket.MitarbeiterId!.Value)
+        .ToDictionary(group => group.Key, group => group.Count());
+}
+
+<!-- TEAM: Die sechs Testpersonen werden in einer einfachen, gut lesbaren Liste gezeigt. -->
+<div class="mb-4">
+    <p class="section-label mb-1">Mitarbeitende</p>
+    <!-- ADMIN: Der Bereich bündelt Mitarbeitende und Kategorien an einer Stelle. -->
+    <h1 class="h2 mb-1">Admin-Bereich</h1>
+    <p class="text-secondary mb-0">Drei Frauen und drei Männer stehen für die Bearbeitung der Test-Tickets bereit.</p>
+</div>
+
+<!-- AUSLASTUNG: Pro Person ein Balken mit der Anzahl aktiver Tickets. -->
+<div class="card content-card mb-4">
+    <div class="card-header bg-white border-0 p-4 pb-2">
+        <h2 class="h5 mb-0">Team-Auslastung</h2>
+        <small class="text-secondary">Aktive Tickets (Offen + In Bearbeitung). Voll sind @kapazitaet Tickets pro Person.</small>
+    </div>
+    <div class="card-body pt-2">
+        <table class="table align-middle mb-0">
+            <tbody>
+                @foreach (var item in Model.OrderByDescending(m => aktiveTickets.GetValueOrDefault(m.MitarbeiterId)))
+                {
+                    var aktiv = aktiveTickets.GetValueOrDefault(item.MitarbeiterId);
+                    var prozent = Math.Min(100, aktiv * 100 / kapazitaet);
+                    var farbe = aktiv >= kapazitaet ? "danger" : aktiv * 2 >= kapazitaet ? "warning" : "success";
+                    var text = aktiv >= kapazitaet ? "Hoch" : aktiv * 2 >= kapazitaet ? "Mittel" : "Niedrig";
+                    var balkenKlasse = "progress-bar bg-" + farbe;
+                    var badgeKlasse = "badge text-bg-" + farbe;
+                    <tr>
+                        <td style="width: 30%;"><strong>@item.Name</strong></td>
+                        <td>
+                            <div class="progress" style="height: 1rem;">
+                                <div class="@balkenKlasse" style="width: @(prozent)%;"></div>
+                            </div>
+                        </td>
+                        <td class="text-nowrap">@aktiv von @kapazitaet</td>
+                        <td class="text-end"><span class="@badgeKlasse">@text</span></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card content-card h-100">
+            <div class="card-header bg-white border-0 p-4 pb-2"><h2 class="h5 mb-0">Teamübersicht</h2></div>
+            <div class="card-body pt-2">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead><tr><th>Name</th><th>Tickets</th><th class="text-end">Aktionen</th></tr></thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td><strong>@item.Name</strong></td>
+                                    <td><span class="badge-status">@(ticketAnzahlen.GetValueOrDefault(item.MitarbeiterId)) Ticket(s)</span></td>
+                                    <td class="text-end">
+                                        <a asp-action="Edit" asp-route-mitarbeiterid="@item.MitarbeiterId" class="btn btn-sm btn-outline-secondary">Bearbeiten</a>
+                                        <a asp-action="Delete" asp-route-mitarbeiterid="@item.MitarbeiterId" class="btn btn-sm btn-outline-danger">Löschen</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- TEAM: Vorhandenes Create-Verhalten bleibt erhalten; nur die Darstellung wurde vereinfacht. -->
+        <div class="card content-card mb-4">
+            <div class="card-body p-4">
+                <h2 class="h5 mb-3">Teammitglied hinzufügen</h2>
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+                    <label for="Name" class="form-label">Name</label>
+                    <input type="text" id="Name" name="Name" class="form-control mb-3" maxlength="50" required />
+                    <button type="submit" class="btn btn-primary w-100">Hinzufügen</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card content-card">
+            <div class="card-header bg-white border-0 p-4 pb-2 d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">Kategorien</h2>
+                <a asp-controller="Kategorie" asp-action="Create" class="btn btn-sm btn-primary">Neue Kategorie</a>
+            </div>
+            <div class="card-body pt-2">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle mb-0">
+                        <tbody>
+                            @foreach (var kategorie in kategorien)
+                            {
+                                <tr>
+                                    <td><strong>@kategorie.KategorieName</strong></td>
+                                    <td class="text-end text-nowrap">
+                                        <a asp-controller="Kategorie" asp-action="Edit" asp-route-kategorieid="@kategorie.KategorieId" class="btn btn-sm btn-outline-secondary">Bearbeiten</a>
+                                        <a asp-controller="Kategorie" asp-action="Delete" asp-route-kategorieid="@kategorie.KategorieId" class="btn btn-sm btn-outline-danger">Löschen</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
