@@ -476,15 +476,16 @@ a:hover { color: var(--desk-green-dark); }
     align-items: center;
     justify-content: center;
     text-align: center;
-    text-decoration-color: white;
-    height: 50px;
-    margin-top: 0px;
+    color: #0f5132;
+    margin-top: 30px;
     margin-left: 0px;
     margin-right: 0px;
-    bottom: 0px;
+    margin-bottom: 0px;
     padding: 0px;
     background-color: #f5f8f6;
-    font-size: 20px;
+    font-size: 30px;
+    font-family: "Segoe UI",sans-serif;
+    
 }
 /*Startseite Überschrift Ende*/
 
@@ -495,16 +496,41 @@ a:hover { color: var(--desk-green-dark); }
     align-items: center;
     justify-content: center;
     text-align: center;
-    text-decoration-color: white;
-    height: 0px;
-    margin-top: 80px;
+    color: #0f5132;
+    margin-top: 0px;
     margin-left: 0px;
     margin-right: 0px;
     padding: 0px;
     background-color: #f5f8f6;
+    font-size: 25px;
+    font-family: "Segoe UI",sans-serif;
+   
 }
 
 /* Text zu Wie können wir Ihnen helfen ? Ende  */
+
+
+
+
+/*Button Ticket erstellen für Startseite*/
+#ticket {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #FFFFFF;
+    margin: 0px;
+    margin-top: 50px;
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-bottom: 0px;
+    padding: 0px;
+    background-color: #f5f8f6;
+    font-size: 20px;
+
+    
+}
+/*Button Ticket erstellen für Startseite Ende*/
 
 
 /*Laufschrifteinstellung für Startseite*/
@@ -515,32 +541,14 @@ a:hover { color: var(--desk-green-dark); }
     justify-content: center;
     text-align: center;
     color: #FFFFFF;
-    height: 20px;
-    margin-top: 150px;
+    /*height: 20px;*/
+    margin-top: 85px;
     margin-left: 0px;
     margin-right: 0px;
     margin-bottom: 0px;
-    padding: 25px;
     background-color: red;
     font-size: 20px;
+    border: 0px
     
 }
 /*Laufschrifteinstellung für Startseite Ende*/
-
-/*Button Ticket erstellen für Startseite*/
-#ticket {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    text-align: center;
-    color: #FFFFFF;
-    height: 20px;
-    margin-top: 100px;
-    margin-left: 0px;
-    margin-right: 0px;
-    margin-bottom: 0px;
-    padding: 0px;
-    background-color: #f5f8f6;
-    font-size: 20px;
-}
-/*Button Ticket erstellen für Startseite Ende*/
