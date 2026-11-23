@@ -267,7 +267,18 @@ else
                         <td>
                             <div class="d-flex flex-wrap gap-1">
                                 <a asp-action="Details" asp-route-id="@ticket.TicketId" class="btn btn-sm btn-outline-secondary">Details</a>
-                                <a asp-action="Edit" asp-route-id="@ticket.TicketId" class="btn btn-sm btn-outline-primary">Bearbeiten</a>
+                                @if (ticket.Status == TicketStatus.Abgeschlossen)
+                                {
+                                    <button type="button" class="btn btn-sm btn-outline-primary" disabled>
+                                        Bearbeiten
+                                    </button>
+                                }
+                                else
+                                {
+                                    <a asp-action="Edit" asp-route-id="@ticket.TicketId"
+                                       class="btn btn-sm btn-outline-primary">Bearbeiten</a>
+                                }
+
                                 <a asp-action="Delete" asp-route-id="@ticket.TicketId" class="btn btn-sm btn-outline-danger">Löschen</a>
                                 @if (ticket.Status == TicketStatus.Abgeschlossen)
                                 {

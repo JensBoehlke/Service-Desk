@@ -1,0 +1,551 @@
+diff --git a/Service-Desk/Controllers/HomeController.cs b/Service-Desk/Controllers/HomeController.cs
+--- a/Service-Desk/Controllers/HomeController.cs
++++ b/Service-Desk/Controllers/HomeController.cs
+@@ -6,6 +6,7 @@
+ {
+     public class HomeController : Controller
+     {
++        // Die Standardroute aus Program.cs landet hier. View() verwendet die Startseite Views/Home/Index.cshtml.
+         public IActionResult Index()
+         {
+             return View();
+diff --git a/Service-Desk/Controllers/IT_MitarbeiterController.cs b/Service-Desk/Controllers/IT_MitarbeiterController.cs
+--- a/Service-Desk/Controllers/IT_MitarbeiterController.cs
++++ b/Service-Desk/Controllers/IT_MitarbeiterController.cs
+@@ -16,6 +16,7 @@
+     // GET: IT_MITARBEITERS
+     public async Task<IActionResult> Index()    
+     {
++        // Der Adminbereich zeigt zwei Listen. Die Mitarbeiterliste ist das Model, die Kategorien kommen zusätzlich über ViewBag.
+         ViewBag.Kategorien = await _context.Kategorie.ToListAsync();
+         return View(await _context.Mitarbeiter.ToListAsync());
+     }
+@@ -39,6 +40,7 @@
+     }
+ 
+     // GET: IT_MITARBEITERS/Create
++    // GET zeigt das leere Formular für den neuen Datensatz (IT-Mitarbeiter).
+     public IActionResult Create()
+     {
+         return View();
+@@ -49,6 +51,7 @@
+     // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+     [HttpPost]
+     [ValidateAntiForgeryToken]
++    // POST empfängt die Felder aus dem Formular. Bei ungültigen Eingaben erscheint es erneut mit den Fehlermeldungen.
+     public async Task<IActionResult> Create([Bind("MitarbeiterId,Name,Tickets")] IT_Mitarbeiter it_mitarbeiter)
+     {
+         if (ModelState.IsValid)
+@@ -61,6 +64,7 @@
+     }
+ 
+     // GET: IT_MITARBEITERS/Edit/5
++    // GET lädt die vorhandenen Werte, damit das Bearbeitungsformular sie anzeigen kann.
+     public async Task<IActionResult> Edit(int? mitarbeiterid)
+     {
+         if (mitarbeiterid == null)
+@@ -81,6 +85,7 @@
+     // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+     [HttpPost]
+     [ValidateAntiForgeryToken]
++    // POST vergleicht die ID aus der Anfrage mit der ID des Formularmodells. Bei gültigen Eingaben speichert EF Core die Änderungen.
+     public async Task<IActionResult> Edit(int? mitarbeiterid, [Bind("MitarbeiterId,Name,Tickets")] IT_Mitarbeiter it_mitarbeiter)
+     {
+         if (mitarbeiterid != it_mitarbeiter.MitarbeiterId)
+@@ -112,6 +117,7 @@
+     }
+ 
+     // GET: IT_MITARBEITERS/Delete/5
++    // GET lädt den Datensatz für die Löschbestätigung. Die Datenbank wird erst beim Absenden geändert.
+     public async Task<IActionResult> Delete(int? mitarbeiterid)
+     {
+         if (mitarbeiterid == null)
+@@ -137,6 +143,7 @@
+         var it_mitarbeiter = await _context.Mitarbeiter.FindAsync(mitarbeiterid);
+         if (it_mitarbeiter != null)
+         {
++            // EF Core merkt die Person zum Löschen vor. Diese Methode löst vorhandene Ticketzuweisungen vorher nicht auf.
+             _context.Mitarbeiter.Remove(it_mitarbeiter);
+         }
+ 
+diff --git a/Service-Desk/Controllers/KategorieController.cs b/Service-Desk/Controllers/KategorieController.cs
+--- a/Service-Desk/Controllers/KategorieController.cs
++++ b/Service-Desk/Controllers/KategorieController.cs
+@@ -15,6 +15,7 @@
+     // GET: KATEGORIES
+     public async Task<IActionResult> Index()    
+     {
++        // Die Kategorien werden auf der gemeinsamen Adminseite gepflegt. Deshalb führt diese Adresse dorthin weiter.
+         return RedirectToAction("Index", "IT_Mitarbeiter");
+     }
+ 
+@@ -38,6 +39,7 @@
+     }
+ 
+     // GET: KATEGORIES/Create
++    // GET zeigt das leere Formular für den neuen Datensatz (Kategorie).
+     public IActionResult Create()
+     {
+         return View();
+@@ -48,6 +50,7 @@
+     // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+     [HttpPost]
+     [ValidateAntiForgeryToken]
++    // POST empfängt die Felder aus dem Formular. Bei ungültigen Eingaben erscheint es erneut mit den Fehlermeldungen.
+     public async Task<IActionResult> Create([Bind("KategorieId,KategorieName,Tickets")] Kategorie kategorie)
+     {
+         if (ModelState.IsValid)
+@@ -60,6 +63,7 @@
+     }
+ 
+     // GET: KATEGORIES/Edit/5
++    // GET lädt die vorhandenen Werte, damit das Bearbeitungsformular sie anzeigen kann.
+     public async Task<IActionResult> Edit(int? kategorieid)
+     {
+         if (kategorieid == null)
+@@ -80,6 +84,7 @@
+     // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+     [HttpPost]
+     [ValidateAntiForgeryToken]
++    // POST vergleicht die ID aus der Anfrage mit der ID des Formularmodells. Bei gültigen Eingaben speichert EF Core die Änderungen.
+     public async Task<IActionResult> Edit(int? kategorieid, [Bind("KategorieId,KategorieName,Tickets")] Kategorie kategorie)
+     {
+         if (kategorieid != kategorie.KategorieId)
+@@ -111,6 +116,7 @@
+     }
+ 
+     // GET: KATEGORIES/Delete/5
++    // GET lädt den Datensatz für die Löschbestätigung. Die Datenbank wird erst beim Absenden geändert.
+     public async Task<IActionResult> Delete(int? kategorieid)
+     {
+         if (kategorieid == null)
+@@ -141,6 +147,7 @@
+         var kategorie = await _context.Kategorie.FindAsync(kategorieid);
+         if (kategorie != null)
+         {
++            // Vor dem Löschen holen wir alle betroffenen Tickets. Ihre KategorieId wird geleert, damit die Tickets erhalten bleiben.
+             var tickets = await _context.Tickets
+                 .Where(t => t.KategorieId == kategorieid)
+                 .ToListAsync();
+@@ -150,6 +157,7 @@
+                 ticket.KategorieId = null;
+             }
+ 
++            // SaveChangesAsync speichert die gelösten Zuordnungen und das Löschen der Kategorie gemeinsam.
+             _context.Kategorie.Remove(kategorie);
+         }
+ 
+diff --git a/Service-Desk/Controllers/SupportController.cs b/Service-Desk/Controllers/SupportController.cs
+--- a/Service-Desk/Controllers/SupportController.cs
++++ b/Service-Desk/Controllers/SupportController.cs
+@@ -5,6 +5,7 @@
+ 
+ namespace Service_Desk.Controllers
+ {
++    // IT-Support: Tickets filtern, zuweisen, bearbeiten, wieder öffnen und löschen.
+     public class SupportController : Controller
+     {
+         private readonly ServiceDeskContext _context;
+@@ -19,6 +20,8 @@
+             Prioritaet? prioritaet,
+             int? kategorie)
+         {
++            // Hier entsteht eine Datenbankabfrage. Include lädt Bearbeiter und Kategorie mit.
++            // Jeder gewählte Filter hängt eine Bedingung an. Erst ToListAsync führt die kombinierte Abfrage aus.
+             var tickets = _context.Tickets
+                 .Include(ticket => ticket.Mitarbeiter)
+                 .Include(ticket => ticket.Kategorie)
+@@ -41,6 +44,7 @@
+ 
+             await PopulateKategorieDropDownListAsync(kategorie);
+ 
++            // Der Controller gibt die gefundenen Tickets als Model an Views/Support/Index.cshtml weiter.
+             return View(await tickets
+                 .OrderByDescending(ticket => ticket.Erstellungsdatum)
+                 .ToListAsync());
+@@ -66,6 +70,7 @@
+             return View(ticket);
+         }
+ 
++        // GET öffnet das Formular und füllt seine Auswahllisten aus den Stammdaten.
+         public async Task<IActionResult> Create()
+         {
+             await PopulateMitarbeiterDropDownListAsync();
+@@ -76,6 +81,7 @@
+         [HttpPost]
+         [ValidateAntiForgeryToken]
+         public async Task<IActionResult> Create(
++            // POST nimmt die hier angegebenen Felder aus dem Formular entgegen. Das Erstellungsdatum setzt der Server.
+             [Bind("ErstelltVon,Titel,Beschreibung,KategorieId,Prioritaet,Status,MitarbeiterId")]
+             Ticket ticket)
+         {
+@@ -92,6 +98,7 @@
+             return View(ticket);
+         }
+ 
++        // GET lädt das gespeicherte Ticket samt aktueller Auswahl. Die Methode zeigt das Formular an.
+         public async Task<IActionResult> Edit(int? id)
+         {
+             if (id == null)
+@@ -112,6 +119,7 @@
+ 
+         [HttpPost]
+         [ValidateAntiForgeryToken]
++        // POST lädt das vorhandene Ticket erneut. TryUpdateModelAsync übernimmt und prüft nur die unten aufgeführten Felder.
+         public async Task<IActionResult> Edit(int id)
+         {
+             var ticket = await _context.Tickets.FindAsync(id);
+@@ -136,6 +144,8 @@
+                     await _context.SaveChangesAsync();
+                     return RedirectToAction(nameof(Index));
+                 }
++                // Wenn EF Core beim Speichern einen Konflikt meldet, prüfen wir, ob das Ticket noch existiert.
++                // Ist er inzwischen gelöscht, folgt HTTP 404. Andere Konflikte gehen an die Fehlerbehandlung weiter.
+                 catch (DbUpdateConcurrencyException)
+                 {
+                     if (!TicketExists(ticket.TicketId))
+@@ -154,6 +164,7 @@
+ 
+         [HttpPost]
+         [ValidateAntiForgeryToken]
++        // Wiederöffnen ist ein eigener Formularschritt. Wir setzen den Status auf Offen, speichern und kehren zur Übersicht zurück.
+         public async Task<IActionResult> Reopen(int id)
+         {
+             var ticket = await _context.Tickets.FindAsync(id);
+@@ -167,6 +178,7 @@
+             return RedirectToAction(nameof(Index));
+         }
+ 
++        // GET zeigt die Rückfrage mit den Ticketdaten. Erst die POST-Methode DeleteConfirmed führt das Löschen aus.
+         public async Task<IActionResult> Delete(int? id)
+         {
+             if (id == null)
+@@ -201,6 +213,7 @@
+             return RedirectToAction(nameof(Index));
+         }
+ 
++        // Die SelectList enthält die ID als Formularwert und den Namen als Anzeigetext. selectedMitarbeiterId markiert die bisherige Auswahl.
+         private async Task PopulateMitarbeiterDropDownListAsync(int? selectedMitarbeiterId = null)
+         {
+             var mitarbeiter = await _context.Mitarbeiter
+@@ -214,6 +227,7 @@
+                 selectedMitarbeiterId);
+         }
+ 
++        // Dasselbe Prinzip für Kategorien: Name anzeigen, ID senden und die vorige Auswahl bei Bedarf wieder anzeigen.
+         private async Task PopulateKategorieDropDownListAsync(int? selectedKategorieId = null)
+         {
+             var kategorien = await _context.Kategorie
+diff --git a/Service-Desk/Controllers/TicketController.cs b/Service-Desk/Controllers/TicketController.cs
+--- a/Service-Desk/Controllers/TicketController.cs
++++ b/Service-Desk/Controllers/TicketController.cs
+@@ -4,10 +4,12 @@
+ using Service_Desk.Models;
+ using Microsoft.AspNetCore.Mvc.Rendering;
+ 
++// Mitarbeiterbereich: Tickets melden, in der Übersicht ansehen und ihre Details aufrufen.
+ public class TicketController : Controller
+ {
+     private readonly ServiceDeskContext _context;
+ 
++    // ASP.NET Core liefert den Datenbankkontext, der in Program.cs registriert wurde.
+     public TicketController(ServiceDeskContext context)
+     {
+         _context = context;
+@@ -17,6 +19,7 @@
+     public async Task<IActionResult> Index(string? status)
+     {
+         // Die Kategorie wird zusammen mit den Tickets geladen.
++        // Include lädt das verknüpfte Kategorie-Objekt mit. ToListAsync führt die Abfrage aus und liefert eine Liste.
+         var tickets = await _context.Tickets
+             .Include(ticket => ticket.Kategorie)
+             .OrderByDescending(ticket => ticket.Erstellungsdatum)
+@@ -27,6 +30,7 @@
+         ViewBag.AusgewaehlterStatus = status ?? "";
+ 
+         // Ohne Status werden alle Tickets angezeigt.
++        // Der Filter kommt als Text aus der URL. Wir wenden ihn erst nach dem Laden auf die Liste an.
+         if (Enum.TryParse<TicketStatus>(status, out var statusFilter))
+         {
+             tickets = tickets.Where(ticket => ticket.Status == statusFilter).ToList();
+@@ -53,6 +57,7 @@
+     //    return View(ticket);
+     //}
+ 
++    // Details sucht das Ticket anhand seiner ID. Fehlt die ID oder das Ticket, antwortet der Server mit HTTP 404.
+     public async Task<IActionResult> Details(int? id)
+     {
+         if (id == null)
+@@ -74,6 +79,7 @@
+     }
+ 
+     // GET: TICKETS/Create
++    // GET zeigt das leere Formular. Das Dropdown zeigt die Namen der Kategorien und sendet beim Absenden ihre ID.
+     public async Task<IActionResult> Create() // asyc fürs await
+     {
+         var kategorien = await _context.Kategorie
+@@ -91,7 +97,9 @@
+     // To protect from overposting attacks, enable the specific properties you want to bind to.
+     // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+     [HttpPost]
++    // ASP.NET Core prüft die Kennung aus dem Formular. Das schützt davor, dass eine fremde Seite das Formular im Namen des Nutzers abschickt.
+     [ValidateAntiForgeryToken]
++    // POST erhält das abgeschickte Formular. Bind bestimmt, welche Eigenschaften ASP.NET Core aus der Anfrage übernehmen darf.
+     public async Task<IActionResult> Create([Bind("TicketId,ErstelltVon,Titel,Beschreibung,Erstellungsdatum,KategorieId,Prioritaet,MitarbeiterId")] Ticket ticket)
+     {
+       // beim neuladen wenn Fehler
+@@ -106,10 +114,13 @@
+             nameof(Kategorie.KategorieId),
+             nameof(Kategorie.KategorieName),
+             ticket.KategorieId);
++        // ModelState enthält Eingabe- und Prüffehler. Bei Fehlern zeigt View(ticket) das ausgefüllte Formular erneut.
++        // Die Kategorien werden vorher erneut bereitgestellt, damit auch das Dropdown seine Auswahl behält.
+         if (ModelState.IsValid)
+         {
+             ticket.Status = TicketStatus.Offen; // Ticketstatus beim erstellen auf Offen setzen
+ 
++            // Add merkt das neue Ticket zur Speicherung vor. SaveChangesAsync schreibt es tatsächlich in die Datenbank.
+             _context.Add(ticket);
+             await _context.SaveChangesAsync();
+             // Nach dem Speichern wieder die Ticketübersicht anzeigen.
+diff --git a/Service-Desk/Data/DatabaseSeeder.cs b/Service-Desk/Data/DatabaseSeeder.cs
+--- a/Service-Desk/Data/DatabaseSeeder.cs
++++ b/Service-Desk/Data/DatabaseSeeder.cs
+@@ -5,6 +5,7 @@
+     // TESTDATEN: Die Initialisierung ist absichtlich einfach und mehrfach ausführbar.
+     public static class DatabaseSeeder
+     {
++        // Füllt die Datenbank für Demo und Tests mit Beispielwerten, wenn die benötigten Daten fehlen.
+         public static void Seed(ServiceDeskContext context)
+         {
+             // Drei Frauen und drei Männer für die Teamansicht.
+@@ -39,6 +40,7 @@
+             context.SaveChanges();
+ 
+             // Es werden nur in einer leeren Ticket-Tabelle zehn Beispieltickets angelegt.
++            // Sobald Tickets vorhanden sind, wird die Liste der Beispieltickets übersprungen. So kommen diese nicht bei jedem Neustart erneut dazu.
+             if (context.Tickets.Any())
+             {
+                 return;
+@@ -55,6 +57,7 @@
+ 
+             var heute = DateTime.Now;
+ 
++            // AddRange merkt alle Beispieltickets auf einmal zum Einfügen vor. SaveChanges speichert sie anschließend.
+             context.Tickets.AddRange(
+                 Ticket("Notebook startet nicht", "Das Notebook bleibt beim Startbildschirm hängen.", "Marie König", heute.AddHours(-2), Prioritaet.Hoch, TicketStatus.Offen, kategorien["Hardware"], mitarbeiter[0]),
+                 Ticket("Passwort zurücksetzen", "Der Zugang zum Intranet ist gesperrt.", "Paul Richter", heute.AddHours(-5), Prioritaet.Mittel, TicketStatus.InBearbeitung, kategorien["Benutzerkonto"], mitarbeiter[3]),
+diff --git a/Service-Desk/Models/IT_Mitarbeiter.cs b/Service-Desk/Models/IT_Mitarbeiter.cs
+--- a/Service-Desk/Models/IT_Mitarbeiter.cs
++++ b/Service-Desk/Models/IT_Mitarbeiter.cs
+@@ -12,6 +12,7 @@
+         [StringLength(50)]
+         public string Name { get; set; } = string.Empty;
+ 
++        // Ein IT-Mitarbeiter kann mehrere Tickets übernehmen. Die Liste bildet die Rückrichtung zur MitarbeiterId im Ticket ab.
+         public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
+ 
+     }
+diff --git a/Service-Desk/Models/Kategorie.cs b/Service-Desk/Models/Kategorie.cs
+--- a/Service-Desk/Models/Kategorie.cs
++++ b/Service-Desk/Models/Kategorie.cs
+@@ -14,6 +14,7 @@
+         [Display(Name = "Kategorie Name")]
+         public string KategorieName { get; set; } = string.Empty;
+ 
++        // Eine Kategorie kann für mehrere Tickets verwendet werden. Jedes Ticket hat höchstens eine Kategorie.
+         public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
+ 
+     }
+diff --git a/Service-Desk/Models/ServiceDeskContext.cs b/Service-Desk/Models/ServiceDeskContext.cs
+--- a/Service-Desk/Models/ServiceDeskContext.cs
++++ b/Service-Desk/Models/ServiceDeskContext.cs
+@@ -3,6 +3,8 @@
+ 
+ namespace Service_Desk.Models
+ {
++    // Der DbContext ist unsere Verbindung zwischen C#-Objekten und den Tabellen in SQL Server.
++    // Über ein DbSet lesen wir Datensätze. Änderungen werden erst mit SaveChanges oder SaveChangesAsync in die Datenbank geschrieben.
+     public class ServiceDeskContext : DbContext
+     {
+         public DbSet<Service_Desk.Models.Kategorie> Kategorie { get; set; } = default!;
+diff --git a/Service-Desk/Models/Ticket.cs b/Service-Desk/Models/Ticket.cs
+--- a/Service-Desk/Models/Ticket.cs
++++ b/Service-Desk/Models/Ticket.cs
+@@ -4,9 +4,12 @@
+ {
+     public class Ticket
+     {
++        // Die TicketId ist der Primärschlüssel. Damit lässt sich jedes Ticket eindeutig finden.
+         [Key]
+         public int TicketId { get; set; }
+ 
++        // ErstelltVon ist der eingegebene Name der meldenden Person. Er verweist auf keinen Mitarbeiterdatensatz.
++        // Required verlangt eine Eingabe, StringLength begrenzt ihre Länge und Display bestimmt die sichtbare Feldbezeichnung.
+         [Required(ErrorMessage = "Bitte Ihre Name angeben.")]
+         [Display(Name = "Erstellt Von")]
+         [StringLength(50)]
+@@ -22,17 +25,22 @@
+ 
+         [Display(Name = "Erstellungsdatum")]
+         [DataType(DataType.DateTime)]
++        // Der Initialwert wird gesetzt, wenn C# ein neues Ticket-Objekt erzeugt. Der Support setzt das Datum beim Speichern ausdrücklich neu.
+         public DateTime Erstellungsdatum { get; set; } = DateTime.Now;
+ 
++        // Die Enums legen die gültigen Werte für Dringlichkeit und Bearbeitungsstand fest. Hier stehen die Startwerte.
+         public Prioritaet Prioritaet { get; set; } = Prioritaet.Mittel;
+ 
+         public TicketStatus Status { get; set; } = TicketStatus.Offen;
+ 
++        // MitarbeiterId ist der Fremdschlüssel. int? erlaubt null, solange niemand zugewiesen ist.
++        // Mitarbeiter ist das dazugehörige Objekt. Damit kann die Ansicht z. B. den Namen anzeigen, wenn der Controller es mit Include lädt.
+         [Display(Name = "Bearbeiter")]
+         public int? MitarbeiterId { get; set; }
+         public IT_Mitarbeiter? Mitarbeiter { get; set; }
+ 
+ 
++        // Auch die Kategorie ist optional. KategorieId speichert die Verknüpfung, Kategorie steht für das zugehörige Objekt.
+         [Display(Name = "Kategorie")]
+         public int? KategorieId { get; set; }
+         public Kategorie? Kategorie { get; set; }
+diff --git a/Service-Desk/Program.cs b/Service-Desk/Program.cs
+--- a/Service-Desk/Program.cs
++++ b/Service-Desk/Program.cs
+@@ -8,12 +8,16 @@
+     {
+         public static void Main(string[] args)
+         {
++            // Hier beginnt die Anwendung. Der Builder liest Einstellungen und sammelt die Dienste, die wir gleich brauchen.
+             var builder = WebApplication.CreateBuilder(args);
+ 
++            // DeskData ist der Name der Verbindungszeichenfolge. Sie sagt EF Core, welchen SQL Server es verwenden soll.
++            // ASP.NET Core erstellt den ServiceDeskContext bei Bedarf und übergibt ihn z. B. an den TicketController.
+             builder.Services.AddDbContext<ServiceDeskContext> (opts =>
+             opts.UseSqlServer(builder.Configuration.GetConnectionString("DeskData")
+             ));
+             // Add services to the container.
++            // Schaltet MVC ein. Controller nehmen Anfragen an und können Razor-Seiten als Antwort zurückgeben.
+             builder.Services.AddControllersWithViews();
+ 
+             var app = builder.Build();
+@@ -31,6 +35,8 @@
+ 
+             app.UseAuthorization();
+ 
++            // Statische Dateien sind z. B. CSS und Bilder. Die Route darunter ordnet URLs den Controller-Methoden zu.
++            // Beispiel: /Support/Details/5 ruft Details im SupportController mit id = 5 auf. / führt zu Home/Index.
+             app.MapStaticAssets();
+             app.MapControllerRoute(
+                 name: "default",
+@@ -38,6 +44,7 @@
+                 .WithStaticAssets();
+ 
+             // TESTDATEN: Beim Start werden fehlende Migrationen und gut erkennbare Demodaten angelegt.
++            // Vor dem Start des Webservers: Kontext holen, fehlende Änderungen am Datenbankschema anwenden und Demodaten vorbereiten.
+             using (var scope = app.Services.CreateScope())
+             {
+                 var context = scope.ServiceProvider.GetRequiredService<ServiceDeskContext>();
+diff --git a/Service-Desk/Views/IT_Mitarbeiter/Index.cshtml b/Service-Desk/Views/IT_Mitarbeiter/Index.cshtml
+--- a/Service-Desk/Views/IT_Mitarbeiter/Index.cshtml
++++ b/Service-Desk/Views/IT_Mitarbeiter/Index.cshtml
+@@ -1,5 +1,6 @@
+ @model IEnumerable<Service_Desk.Models.IT_Mitarbeiter>
+ @inject Service_Desk.Models.ServiceDeskContext Database
++@* Die Seite bekommt die Personenliste als Model und die Kategorien über ViewBag. Die Ticketzahlen werden zusätzlich aus der Datenbank gelesen. *@
+ 
+ @{
+     ViewData["Title"] = "Admin-Bereich";
+diff --git a/Service-Desk/Views/Shared/_Layout.cshtml b/Service-Desk/Views/Shared/_Layout.cshtml
+--- a/Service-Desk/Views/Shared/_Layout.cshtml
++++ b/Service-Desk/Views/Shared/_Layout.cshtml
+@@ -78,6 +78,7 @@
+         <div class="app-page">
+             <main class="main-content" role="main">
+                 <div class="container-fluid px-3 px-lg-4 py-4 py-lg-5">
++                    @* Hier setzt Razor den Inhalt der aktuellen Seite ein. Die gemeinsame Navigation steht außen herum im Layout. *@
+                     @RenderBody()
+                 </div>
+             </main>
+diff --git a/Service-Desk/Views/Support/Create.cshtml b/Service-Desk/Views/Support/Create.cshtml
+--- a/Service-Desk/Views/Support/Create.cshtml
++++ b/Service-Desk/Views/Support/Create.cshtml
+@@ -8,6 +8,7 @@
+ 
+ <div class="row">
+     <div class="col-md-7 col-lg-6">
++        @* Der Support darf im Formular zusätzlich den Startstatus und die zuständige Person auswählen. *@
+         <form asp-action="Create" method="post">
+             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+ 
+diff --git a/Service-Desk/Views/Support/Delete.cshtml b/Service-Desk/Views/Support/Delete.cshtml
+--- a/Service-Desk/Views/Support/Delete.cshtml
++++ b/Service-Desk/Views/Support/Delete.cshtml
+@@ -27,6 +27,7 @@
+     <dd class="col-sm-9">@Model.Erstellungsdatum.ToString("dd.MM.yyyy HH:mm")</dd>
+ </dl>
+ 
++@* Erst diese Bestätigung sendet den POST zum Löschen. Die ID identifiziert das betreffende Ticket. *@
+ <form asp-action="Delete" asp-route-id="@Model.TicketId" method="post">
+     <button type="submit" class="btn btn-danger">Endgültig löschen</button>
+     <a asp-action="Index" class="btn btn-outline-secondary">Abbrechen</a>
+diff --git a/Service-Desk/Views/Support/Edit.cshtml b/Service-Desk/Views/Support/Edit.cshtml
+--- a/Service-Desk/Views/Support/Edit.cshtml
++++ b/Service-Desk/Views/Support/Edit.cshtml
+@@ -8,6 +8,7 @@
+ 
+ <div class="row">
+     <div class="col-md-7 col-lg-6">
++        @* asp-route-id setzt die ID in die Formularadresse. Beim Absenden weiß der Controller so, welches Ticket geändert werden soll. *@
+         <form asp-action="Edit" asp-route-id="@Model.TicketId" method="post">
+             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+ 
+diff --git a/Service-Desk/Views/Support/Index.cshtml b/Service-Desk/Views/Support/Index.cshtml
+--- a/Service-Desk/Views/Support/Index.cshtml
++++ b/Service-Desk/Views/Support/Index.cshtml
+@@ -1,5 +1,6 @@
+ @model IEnumerable<Service_Desk.Models.Ticket>
+ @inject Service_Desk.Models.ServiceDeskContext Database
++@* Model liefert die gefilterten Tickets für die Liste. Database wird zusätzlich für die Kennzahlen über alle Tickets verwendet. *@
+ 
+ @{
+     ViewData["Title"] = "Support – Tickets";
+@@ -166,6 +167,7 @@
+ </section>
+ 
+ <!-- FILTERLAYOUT: Vier gleich breite Auswahlfelder und ein breiter Aktionsbereich. -->
++@* Ein GET-Formular schreibt die gewählten Filter in die URL. Der Controller verwendet diese Werte beim Laden der Tickets. *@
+ <form method="get" class="row g-3 align-items-end mb-4">
+     <div class="col-md-6 col-xl-2">
+         <label for="status" class="form-label">Status</label>
+diff --git a/Service-Desk/Views/Ticket/Create.cshtml b/Service-Desk/Views/Ticket/Create.cshtml
+--- a/Service-Desk/Views/Ticket/Create.cshtml
++++ b/Service-Desk/Views/Ticket/Create.cshtml
+@@ -9,6 +9,8 @@
+ <div class="row">
+     <div class="col-md-4">
+         @* Das Formular sendet die Eingaben an die POST-Methode im TicketController. *@
++        @* Das Formular sendet per POST an TicketController.Create. asp-for verknüpft Eingaben mit den Eigenschaften des Tickets. *@
++        @* asp-validation-for zeigt die Meldung zum jeweiligen Feld an, wenn die Eingabe nicht passt. *@
+         <form asp-controller="Ticket" asp-action="Create" method="post">
+             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+ 
+diff --git a/Service-Desk/Views/Ticket/Details.cshtml b/Service-Desk/Views/Ticket/Details.cshtml
+--- a/Service-Desk/Views/Ticket/Details.cshtml
++++ b/Service-Desk/Views/Ticket/Details.cshtml
+@@ -81,6 +81,7 @@
+  *@
+ 
+ @model Service_Desk.Models.Ticket
++@* Diese Seite zeigt ein einzelnes Ticket. Model.Titel greift auf den Titel dieses Tickets zu. *@
+ 
+ @{
+     ViewData["Title"] = "Ticketdetails";
+diff --git a/Service-Desk/Views/Ticket/Index.cshtml b/Service-Desk/Views/Ticket/Index.cshtml
+--- a/Service-Desk/Views/Ticket/Index.cshtml
++++ b/Service-Desk/Views/Ticket/Index.cshtml
+@@ -1,4 +1,5 @@
+ @model IEnumerable<Service_Desk.Models.Ticket>
++@* Model ist die Ticketliste aus TicketController.Index. Die Schleife weiter unten erzeugt für jedes Ticket eine Tabellenzeile. *@
+ 
+ @{
+     ViewData["Title"] = "Tickets";

@@ -104,6 +104,10 @@ namespace Service_Desk.Controllers
             {
                 return NotFound();
             }
+            if (ticket.Status == TicketStatus.Abgeschlossen)
+            {
+                return RedirectToAction(nameof(Details), new { id = ticket.TicketId });
+            }
 
             await PopulateMitarbeiterDropDownListAsync(ticket.MitarbeiterId);
             await PopulateKategorieDropDownListAsync(ticket.KategorieId);
@@ -118,6 +122,10 @@ namespace Service_Desk.Controllers
             if (ticket == null)
             {
                 return NotFound();
+            }
+            if (ticket.Status == TicketStatus.Abgeschlossen)
+            {
+                return RedirectToAction(nameof(Details), new { id = ticket.TicketId });
             }
 
             if (await TryUpdateModelAsync(
