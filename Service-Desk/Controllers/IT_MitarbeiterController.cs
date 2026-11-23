@@ -1,4 +1,3 @@
-
 using Azure.Core;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -126,6 +125,12 @@ public class IT_MitarbeiterController : Controller
             return NotFound();
         }
 
+        ViewBag.Tickets = await _context.Tickets
+            .Where(ticket => ticket.MitarbeiterId == mitarbeiterid)
+            .OrderByDescending(ticket => ticket.Erstellungsdatum)
+            .ToListAsync();
+        ViewBag.HatTickets = ((IEnumerable<Ticket>)ViewBag.Tickets).Any();
+
         return View(it_mitarbeiter);
     }
 
@@ -135,11 +140,25 @@ public class IT_MitarbeiterController : Controller
     public async Task<IActionResult> DeleteConfirmed(int? mitarbeiterid)
     {
         var it_mitarbeiter = await _context.Mitarbeiter.FindAsync(mitarbeiterid);
-        if (it_mitarbeiter != null)
+        if (it_mitarbeiter == null)
         {
-            _context.Mitarbeiter.Remove(it_mitarbeiter);
+            return NotFound();
         }
 
+        var hatTickets = await _context.Tickets
+            .AnyAsync(ticket => ticket.MitarbeiterId == mitarbeiterid);
+        if (hatTickets)
+        {
+            ViewBag.HatTickets = true;
+            ViewBag.Tickets = await _context.Tickets
+                .Where(ticket => ticket.MitarbeiterId == mitarbeiterid)
+                .OrderByDescending(ticket => ticket.Erstellungsdatum)
+                .ToListAsync();
+            ViewBag.DeleteError = "Der IT-Mitarbeiter kann nicht gelöscht werden, weil ihm noch Tickets zugewiesen sind.";
+            return View(it_mitarbeiter);
+        }
+
+        _context.Mitarbeiter.Remove(it_mitarbeiter);
         await _context.SaveChangesAsync();
         return RedirectToAction(nameof(Index));
     }
