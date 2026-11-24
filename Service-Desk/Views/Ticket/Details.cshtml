@@ -121,13 +121,6 @@
 <div class="d-flex flex-wrap gap-2">
     @* Tickets werden nur im Support-Bereich bearbeitet. *@
 
-    @if (Model.Status == TicketStatus.Abgeschlossen)
-    {
-        <form asp-action="Reopen" asp-route-id="@Model.TicketId" method="post">
-            <button type="submit" class="btn btn-success">Wieder öffnen</button>
-        </form>
-    }
-
     <a asp-action="Index" class="btn btn-outline-secondary">Zur Übersicht</a>
 </div>
 
