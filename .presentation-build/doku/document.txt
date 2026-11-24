@@ -1,0 +1,219 @@
+# 1 Einleitung
+## 1.1 Projektumfeld
+Unser Auftraggeber im Schulprojekt ist die Westfalen Office Solutions GmbH in Dortmund. Laut Aufgabenblatt vertreibt und wartet das Unternehmen Büroausstattung und beschäftigt rund 250 Mitarbeitende. Wir haben ServiceDesk als dreiköpfiges Team im Softwareprojekt DO1 bei der BITLC Business IT Learning Center GmbH bearbeitet.
+
+## 1.2 Projektziel
+Wir wollten eine Webanwendung entwickeln, in der Mitarbeitende ihre IT-Probleme erfassen und den Bearbeitungsstand nachsehen können. Der Support erhält eine gemeinsame Arbeitsliste. Die Administration pflegt die Kategorien und die Personen, denen Tickets zugewiesen werden können. Für uns war ein Ticket erst dann sinnvoll, wenn man von der ersten Meldung bis zum Abschluss sehen kann, wo die Bearbeitung gerade steht.
+
+## 1.3 Projektbegründung
+Wenn ein Drucker ausfällt, scheint ein kurzer Anruf bei der IT erst einmal der einfachste Weg zu sein. Für die Person am Telefon ist die Sache damit gemeldet. Für den Support beginnt aber die eigentliche Arbeit: Er muss die Anfrage festhalten, möglicherweise Rückfragen klären und dafür sorgen, dass jemand die Bearbeitung übernimmt. Geht parallel eine E-Mail zum selben Problem ein, ist ohne gemeinsamen Überblick schwer zu erkennen, ob schon jemand daran arbeitet. Genau hier setzt unser Projekt ServiceDesk an.
+
+## 1.4 Projektschnittstellen
+Der Browser ist die Schnittstelle für alle drei Arbeitsbereiche. Die Webanwendung greift über Entity Framework Core auf SQL Server LocalDB zu. Unser gemeinsames GitHub-Repository dient der Zusammenarbeit im Team. Die Ergebnisse stellen wir im Unterricht anhand der Dokumentation und einer Live-Demonstration vor.
+
+## 1.5 Projektabgrenzung
+Die Aufgabe sieht Mitarbeitende als Datensätze vor und verlangt keine Anmeldung. Der eingetragene Name dient der Zuordnung der Meldung und wird nicht als Identitätsnachweis verwendet. Die drei Navigationsbereiche stehen für unterschiedliche Aufgaben. Eine Anbindung an das Firmenpostfach oder eine automatische Umwandlung von E-Mails in Tickets ist im Projektumfang nicht vorgesehen.
+
+Die Beschreibung der Implementierung bezieht sich auf den Quellcode vom 20. November 2026, Git-Stand e53a7d7. In Kapitel 6 halten wir fest, welche Prüfungen ausgeführt werden konnten und welche Beobachtungen sich aus der Codeprüfung ergeben.
+
+# 2 Projektplanung
+## 2.1 Projektphasen und Zeitplan
+Wir haben den Ablauf am Wasserfallmodell ausgerichtet. Vor dem Programmieren haben wir gemeinsam Anforderungen, Datenmodell und Oberflächenentwurf bearbeitet. Als wir die Funktionen in MVC umgesetzt haben, konnten wir die drei Arbeitsbereiche parallel entwickeln. Die Dokumentation lief begleitend. Die Einteilung nach Unterrichtstagen ist unser Phasenplan. Die Tabelle enthält keine nachträglich geschätzten Stunden je Person.
+
+@table 0.45 0.88 1.45 1.1
+Tage|Phase|Arbeiten|Meilenstein
+1–2|Analyse|Auftrag lesen, Ausgangslage und Anforderungen klären.|Anforderungsliste steht.
+3–4|Entwurf|UML, Oberflächenentwurf, Testideen und Aufteilung abstimmen.|Gemeinsamer Entwurf steht.
+5–9|Implementierung|Ticketmeldung, Support, Administration und Datenbank entwickeln.|Bereiche teilen sich den Ticketbestand.
+10–11|Validierung|Anlegen, Weiterbearbeiten, Ablehnung ungültiger Eingaben und Löschfälle prüfen.|Testbefunde sind festgehalten.
+12|Abschluss|Soll und Ist vergleichen, Abweichungen bewerten, Demo vorbereiten.|Abgabestand ist nachvollziehbar.
+13|Dokumentation und Abgabe|Dokumentation, Startanleitung und Präsentation zusammenführen.|Abgabe laut Auftrag am 25.11.2026 bis 16 Uhr.
+@end
+
+## 2.2 Ressourcen und Teamaufteilung
+Für die Entwicklung nutzten wir eine Windows-Entwicklungsumgebung mit Visual Studio, .NET 10 und einer lokalen SQL-Datenbank. Ein Browser dient zur Bedienung und für die späteren Tests. Das GitHub-Repository liefert den gemeinsamen Codebestand. Bis zum Einstieg in die MVC-Implementierung haben wir zu dritt gearbeitet. Danach haben wir die technische Verantwortung so verteilt.
+
+@table 0.95 1.73
+Teammitglied|Arbeitsbereich ab MVC
+Jens Böhlke|Mitarbeiterbereich für Ticketmeldung und Einsicht
+Daniel Kowalczyk|Supportbereich für Bearbeitung und Zuweisung
+Babak Najafpoursarabi|Adminbereich und SQL-Datenbankanbindung
+@end
+
+## 2.3 Entwicklungsprozess und Übergaben
+Bei der Aufteilung haben wir an den Übergängen angesetzt. Jens musste Kategorien anzeigen können, die Babaks Adminbereich verwaltet. Daniels Support musste Tickets sehen, die im Mitarbeiterbereich entstanden waren. Babaks Datenmodell musste beide Abläufe ermöglichen. Das Ticket war damit die gemeinsame Grundlage, an der sich unsere Bereiche getroffen haben. Für das Zusammenführen stand ein gemeinsames GitHub-Repository zur Verfügung. Die Git-Historie enthält die zusammengeführten Änderungen an den verschiedenen Bereichen.
+
+# 3 Analysephase
+## 3.1 Ist-Analyse
+Im Kundenfall erreichen interne IT-Anfragen die IT-Abteilung telefonisch oder per E-Mail. Die Anfragen liegen damit an mehreren Stellen. Ob eine Meldung schon bearbeitet wird, muss gegebenenfalls im Postfach, in einer Notiz oder durch Nachfragen geklärt werden. Bei einer Übergabe fehlen leicht Angaben zur ursprünglichen Meldung oder zur Zuständigkeit. Für die Mitarbeitenden wiederum entsteht Unsicherheit, wenn nach dem Absenden einer E-Mail zunächst keine Rückmeldung kommt.
+
+Die Schwierigkeit liegt auch in den unterschiedlichen Sichten auf dieselbe Anfrage. Eine meldende Person möchte wissen, ob ihr Problem angekommen ist und ob die IT daran arbeitet. Der Support muss zusätzlich beurteilen, wie dringend das Problem ist und wer es übernehmen kann. Die Administration wiederum braucht eine gepflegte Liste der IT-Mitarbeitenden und Kategorien, damit der Support überhaupt eine sinnvolle Auswahl hat. Aus diesen drei Bedürfnissen haben wir die Bereiche der Anwendung abgeleitet.
+
+@table 1.05 1.2
+Rolle|Was im Alltag gebraucht wird
+Meldende Mitarbeitende|Ein kurzes Formular für eine verständliche Meldung und eine Übersicht mit Status und Details.
+IT-Support|Eine gemeinsame, filterbare Liste mit Priorität, Kategorie, Status und Zuständigkeit sowie Möglichkeiten zur Bearbeitung.
+Administration|Pflege der IT-Mitarbeitenden und Kategorien, aus denen die Ticketformulare ihre Auswahl beziehen.
+@end
+
+## 3.2 Soll-Konzept
+Die Meldung wird als Ticket gespeichert und erscheint unmittelbar im gemeinsamen Bestand. Die meldende Person trägt ihren Namen als Text ein und beschreibt das Problem. Der Support kann das Ticket einordnen, priorisieren und einem IT-Mitarbeiter zuweisen. Der Status macht sichtbar, an welcher Stelle der Bearbeitung es steht. Muss ein erledigter Fall erneut aufgegriffen werden, soll er zuerst wieder den Status Offen bekommen.
+
+Wir sind davon ausgegangen, dass das System als Schulprojekt für einen internen Ablauf demonstriert wird. Das Aufgabenblatt setzt keine Anmeldung voraus. Mitarbeiterbereich, Support und Administration sind deshalb fachlich getrennte Seiten. Ein erfasster Name dient zur Orientierung innerhalb des Tickets. Er ist keine verifizierte Identität und begründet keine Zugriffsrechte. Die drei Ansichten ergänzen sich: Die Erfassung bleibt kurz, während der Support beim Bearbeiten die zusätzlichen Felder braucht.
+
+Für die Bedienung haben wir uns an einem einfachen Beispiel orientiert. Bei einem nicht erreichbaren Drucker meldet die betroffene Person das Problem mit einem kurzen Titel und einer genaueren Beschreibung. Auf der Supportseite lässt sich der neue Fall über seinen Status finden. Jemand aus dem IT-Team übernimmt ihn und ändert den Bearbeitungsstand. Die meldende Person sieht später in der Ticketliste, ob die IT den Fall abgeschlossen hat.
+
+# 3 Analysephase  Fortsetzung
+## 3.3 Anwendungsfälle und Anforderungen
+Wir haben die Vorgaben aus dem Aufgabenblatt so formuliert, dass wir sie später an der Oberfläche prüfen können. Die Kennungen helfen, die Anforderungen im Testplan und im Soll-Ist-Vergleich wiederzufinden.
+
+Im Anwendungsfalldiagramm steht die Frage im Vordergrund, wer eine Aktion ausführt. Die meldende Person erfasst und liest Tickets. Der IT-Support bearbeitet sie, vergibt Zuständigkeiten und öffnet Fälle bei Bedarf erneut. Die Administration pflegt die Stammdaten. Das Diagramm bildet das Soll-Konzept ab. Die Berechtigungsprüfung gehört nach Aufgabenblatt nicht zum Projektumfang.
+@diagram usecase
+Abbildung 1. UML-Anwendungsfalldiagramm für die drei Arbeitsbereiche.
+@caption
+
+@table 0.38 0.95 2.05
+ID|Anforderung|Woran die Erfüllung erkennbar ist
+A1|IT-Mitarbeiter verwalten|Eine Person lässt sich erfassen, anzeigen, bearbeiten und löschen.
+A2|Tickets verwalten|Titel, Beschreibung und Erstellungsdatum sind vorhanden. Tickets lassen sich anlegen, lesen, bearbeiten und löschen.
+A3|Zuständigkeit|Der Support kann einen IT-Mitarbeiter auswählen und die Zuweisung am Ticket wiedersehen.
+A4|Kategorien|Die Administration pflegt Kategorien. Eine Kategorie lässt sich einem Ticket zuordnen.
+A5|Priorität und Status|Es gibt Niedrig, Mittel und Hoch sowie Offen, In Bearbeitung und Abgeschlossen.
+A6|Filter|Die Supportübersicht lässt sich nach Status und Priorität eingrenzen.
+A7|Wiederöffnen|Ein abgeschlossenes Ticket muss vor einer inhaltlichen Änderung erneut geöffnet werden.
+A8|Validierung|Fehlende Pflichtangaben führen zu verständlichen Meldungen. Ungültige Eingaben werden serverseitig abgewiesen.
+A9|Verknüpfte Daten|Beim Löschen referenzierter Stammdaten greift eine nachvollziehbare Regel. Bestehende Tickets bleiben erhalten.
+@end
+
+## 3.4 Qualitätsanforderungen
+Die Navigation soll in jedem Bereich gleich bleiben. Ein ungültiges Formular soll erklären, welches Feld korrigiert werden muss. Aus der Ticketliste sollen Status, Datum und der Weg zu den Details ohne Nachfragen hervorgehen. Die Zuweisung und die Bearbeitung müssen auch nach dem erneuten Aufruf eines Tickets nachvollziehbar sein.
+
+# 4 Entwurfsphase
+## 4.1 Zielplattform und Architektur
+Wir haben MVC gewählt, weil es eine feste Aufteilung für die Arbeit an einer Webanwendung vorgibt. Das Model beschreibt unter anderem das Ticket und seine Pflichtfelder. Ein Controller bearbeitet die Anfrage und lädt oder speichert die benötigten Daten. Die Razor View gestaltet daraus die Seite, die im Browser erscheint. So konnten wir die drei Funktionsbereiche entwickeln, ohne für jeden Bereich eigene Ticketmodelle oder Datenbanken anzulegen.
+
+@table 1.05 2.25
+Baustein|Aufgabe und Begründung
+ASP.NET Core MVC auf .NET 10|Ein Projekt mit getrennten Controllern und Views für die jeweiligen Aufgaben. Die Standardroute öffnet Home/Index.
+Razor und Bootstrap|Formulare, Tabellen, Schaltflächen und Rückmeldungen folgen einem gemeinsamen Aufbau. Das projektspezifische CSS gestaltet Navigation und Übersichten.
+Entity Framework Core 10.0.15|Der Anwendungscode arbeitet mit C#-Objekten. Migrationen halten die Entwicklung des relationalen Schemas fest.
+SQL Server LocalDB|Die Entwicklungsdaten liegen in einer lokalen relationalen Datenbank. Die Verbindung wird über DeskData konfiguriert.
+Git und GitHub|Änderungen an Controllern, Views und Modellen lassen sich zusammenführen und im Verlauf nachvollziehen.
+@end
+
+## 4.2 Oberflächenentwurf und Mockups
+Bei den Mockups haben wir die wichtigsten Wege aufgeteilt. Der Mitarbeiterbereich braucht eine auffällige Schaltfläche für neue Tickets und eine Liste mit Details. Im Support sollen die wichtigsten Zahlen und die Filter über der Arbeitsliste stehen. Für die Administration sind Teamübersicht und Kategorien auf einer Seite zusammengefasst. Die Skizzen zeigen die Anordnung der Bedienelemente in vereinfachter Form. Die tannengrüne Navigation und das Westfalen-Logo verbinden die Ansichten optisch.
+@diagram mockup
+Abbildung 3. Schematische Rekonstruktion des geplanten Mitarbeiter- und Supportbereichs.
+@caption
+
+# 4 Entwurfsphase  Fortsetzung
+## 4.3 Datenmodell und UML-Klassendiagramm
+Das Ticket ist mit einer Kategorie und einem IT-Mitarbeiter verknüpfbar. Ein IT-Mitarbeiter kann für mehrere Tickets zuständig sein. Ebenso kann dieselbe Kategorie zu mehreren Tickets gehören. Beide Verknüpfungen sind im Ist-Modell optional. Die nullable Fremdschlüssel erlauben ein Ticket ohne Zuweisung oder ohne Kategorie. Die meldende Person steht als Freitext im Ticket. Sie erhält in diesem Modell keinen eigenen Stammdatensatz.
+@diagram classes
+Abbildung 2. UML-Klassendiagramm der aktuellen Fachklassen mit Multiplizitäten.
+@caption
+
+## 4.4 Geschäftsregeln
+Eine Meldung aus dem Mitarbeiterbereich beginnt als Offen. Der Support priorisiert sie, vergibt bei Bedarf eine Zuständigkeit und ändert den Bearbeitungsstand. Ein abgeschlossener Fall soll vor einer Inhaltsänderung wieder geöffnet werden. Bei Änderungen an den Stammdaten müssen bestehende Tickets erhalten bleiben. Diese Regeln betreffen mehr als eine Seite und sind deshalb auch Teil der Testplanung.
+
+## 4.5 Qualitätssicherung und Testplanung
+Wir prüfen aus Sicht der Personen, die die Anwendung im Browser benutzen. Für jeden Test halten wir den Ausgangszustand, die Eingabe und die sichtbare Erwartung fest. Zum Beispiel muss ein neu erstelltes Ticket nach dem Speichern als Offen in der Übersicht auftauchen. Wenn ein Pflichtfeld fehlt, soll das Formular die Eingabe zurückweisen und erklären, was fehlt. Welche Methode im Controller das erledigt, spielt bei dieser Beobachtung keine Rolle.
+
+Die Tests bauen auf wenigen wiedererkennbaren Datensätzen auf. Für die Hauptstrecke legen wir ein eigenes Ticket mit eindeutigem Titel an. So lässt sich ein Ergebnis auch prüfen, wenn bereits Beispieltickets vorhanden sind. Für das Löschen verknüpfter Stammdaten verwenden wir eine eigens angelegte Testkategorie und einen eigenen Testmitarbeiter. Die Auswirkungen prüfen wir am zuvor zugewiesenen Ticket. Dafür verwenden wir eine separate Testdatenbank.
+
+Wir trennen den Build von der Prüfung im Browser. Ein erfolgreicher Build belegt, dass sich das Projekt übersetzen lässt. Für die Abnahme muss außerdem die Anwendung mit einer erreichbaren SQL-Instanz starten. Die Ist-Spalte in Kapitel 6 hält fest, welche Beobachtungen tatsächlich vorliegen.
+
+# 5 Implementierungsphase
+## 5.1 Mitarbeiterbereich – Jens Böhlke
+Ich habe den Bereich umgesetzt, in dem normale Mitarbeitende ein Ticket melden und danach nachsehen können, wie weit die Bearbeitung ist. Beim Entwurf war mir wichtig, dass man für eine Meldung vor allem das Problem beschreiben muss. Fragen nach einem zuständigen IT-Mitarbeiter oder der internen Priorität würden an dieser Stelle von der eigentlichen Aufgabe ablenken. Das Formular zeigt deshalb Name, Kategorie, Titel und Nachricht. Die Ticketübersicht und die Details sind von dort aus direkt erreichbar.
+
+Beim Öffnen des Formulars lädt der TicketController die Kategorien aus dem ServiceDeskContext und sortiert sie nach ihrem Namen. Die Razor View baut daraus eine Auswahlliste. Für die Speicherung ist die ID der Kategorie entscheidend. Angezeigt wird der Name. Dadurch bekommt das Formular auch die Kategorien, die im Adminbereich neu angelegt werden. Die Auswahl kann im aktuellen Stand leer bleiben, weil KategorieId im Modell optional ist.
+
+Wenn jemand das Formular absendet, verarbeitet die POST-Action die Angaben. ASP.NET Core bindet die Felder an das Ticketmodell und prüft die Regeln für Name, Titel und Beschreibung. Die maximale Länge beträgt 50 Zeichen für den Namen, 100 für den Titel und 2.000 für die Beschreibung. Bei ungültigen Eingaben bleibt die Person im Formular. Damit die Kategorieauswahl dabei weiter funktioniert, lädt der Controller die Liste erneut und übergibt die bisherige Auswahl. Die View hat für die Felder eigene Stellen, an denen Fehlermeldungen angezeigt werden.
+
+Bei einer gültigen Meldung setzt der Controller den Status auf Offen und speichert das Ticket. Die Priorität fällt beim regulären Formular auf den Modellstandard Mittel, und das Erstellungsdatum kommt aus der Initialisierung im Modell. Nach dem Speichern geht es zurück zur Übersicht. Dieser Wechsel ist praktisch, weil die Person die Meldung direkt sehen kann und ein Neuladen der Übersichtsseite das Speichern nicht erneut auslöst.
+
+Die Übersicht sortiert nach Erstellungsdatum absteigend und bietet einen Statusfilter. In den Details lässt sich auch eine längere Beschreibung lesen. Die Übersicht bietet keine Bearbeitung an. In der Detailansicht ist für abgeschlossene Tickets allerdings noch eine Schaltfläche zum Wiederöffnen sichtbar, obwohl der TicketController keine passende Action bereitstellt. Der Bearbeitungsweg gehört in den Support. Die Schaltfläche zählt zur Nacharbeit an der Trennung der beiden Bedienwege.
+
+# 5 Implementierungsphase  Fortsetzung
+## 5.2 IT-Support – Daniel Kowalczyk
+Ich habe den Bereich übernommen, in dem der Support die Meldungen aufgreift und weiterbearbeitet. Für diese Seite war für mich wichtig, dass man schon in der Übersicht sieht, welche Fälle noch offen sind, welche bearbeitet werden und welche erledigt sind. Von dort soll man zügig zu den Details oder zur Bearbeitung kommen. Der SupportController lädt die Tickets zusammen mit der Kategorie und der zugewiesenen Person. In der Tabelle kann die View dadurch direkt die Namen anzeigen.
+
+Die Filter für Status, Priorität und Kategorie lassen sich miteinander verbinden. Der Controller ergänzt die Abfrage um eine Bedingung, sobald der jeweilige Filter gesetzt ist. So kann der Support gezielt nach offenen Tickets hoher Priorität suchen und bei Bedarf noch eine Kategorie auswählen. Standardmäßig erscheinen neue Tickets zuerst. Für die umgekehrte Reihenfolge kann die Ansicht nach dem Erstellungsdatum aufsteigend sortieren. Wenn die Auswahl kein Ergebnis liefert, gibt die Seite einen Hinweis aus.
+
+Im Bearbeitungsformular sind Kategorie, Priorität, Status und Zuständigkeit neben den Angaben zur Meldung verfügbar. Die Auswahllisten stammen aus denselben Stammdaten, die Babaks Bereich verwaltet. Beim Speichern lädt die Action zuerst das vorhandene Ticket und übernimmt nur die für die Bearbeitung vorgesehenen Felder. Das Erstellungsdatum bleibt erhalten. Der Support kann auch selbst ein Ticket erfassen. Beim Löschen gibt es einen Bestätigungsschritt, damit man den betroffenen Fall vor dem Speichern der Änderung noch einmal sieht.
+
+Für bereits abgeschlossene Tickets zeigt die Supportansicht „Wieder öffnen“ anstelle von „Bearbeiten“ an. Der Klick sendet das Formular an die POST-Action Reopen, die den Status auf Offen setzt. In der Codeprüfung ist sichtbar, dass die Edit-Actions den Status bislang nicht selbst kontrollieren. Die Ansicht sollte für abgeschlossene Tickets die Bearbeitung ausblenden. Der Controller muss auch direkte Bearbeitungsanfragen für diesen Status ablehnen.
+
+Die Prioritätsbalken sind aus der Frage entstanden, wie der Support einen Überblick bekommt, bevor er sich in einzelne Fälle einliest. Grün steht für Niedrig, Gelb für Mittel und Rot für Hoch. Die Balken zeigen die Verteilung für offene Tickets, Tickets in Bearbeitung und den Gesamtbestand. Die Zahlen beziehen sich auf den Gesamtbestand, auch wenn die Tabelle gerade gefiltert ist. Dadurch kann ich zum Beispiel nur offene Hardwaretickets ansehen und trotzdem sehen, wie viele Fälle insgesamt noch anstehen.
+
+# 5 Implementierungsphase  Fortsetzung
+## 5.3 Administration – Babak Najafpoursarabi
+Ich habe den Adminbereich und die Anbindung an die SQL-Datenbank übernommen. Im Adminbereich habe ich die Personen, die Tickets bearbeiten können, und die Kategorien an einer Stelle zusammengeführt. Beide Listen braucht der Support bei seiner täglichen Arbeit. Im Mitarbeiterbereich werden die Kategorien zusätzlich schon bei der Meldung angezeigt. Ein neu angelegter Stammdatensatz findet damit direkt einen Platz in den anderen Teilen der Anwendung.
+
+Der IT_MitarbeiterController lädt die Teamdaten und stellt der Adminansicht zusätzlich die Kategorien zur Verfügung. Personen können angelegt, angezeigt, bearbeitet und gelöscht werden. Der KategorieController übernimmt die Aktionen für die Kategorien und führt nach einer Änderung zur gemeinsamen Übersicht zurück. Beide Modelle verlangen einen Namen mit höchstens 50 Zeichen. Die Formulare zeigen die Modellfehler an, wenn ein erforderlicher Name fehlt.
+
+Wenn eine Kategorie gelöscht wird, lädt der Controller zuerst die Tickets, die auf diese Kategorie verweisen. Für diese Tickets setzt er den Fremdschlüssel auf null. Erst danach entfernt er die Kategorie und speichert die Änderungen. Die ursprüngliche Problembeschreibung und der Bearbeitungsstand der Tickets bleiben so erhalten. Beim Löschen eines IT-Mitarbeiters fehlt im aktuellen Controller eine solche Behandlung. Der Fremdschlüssel eines zugewiesenen Tickets kann den Löschvorgang blockieren. Dieser Fall ist auch in der Projektnotiz zu einem früheren Datenbankfehler festgehalten. Für die Abnahme fehlt an dieser Stelle eine verständliche Reaktion der Anwendung.
+
+Die Adminansicht zeigt zusätzlich die Auslastung des Teams an. Sie zählt offene Tickets und Tickets in Bearbeitung. Vier aktive Tickets pro Person gelten als 100 Prozent. Aktive Tickets ohne Bearbeiter werden separat aufgeführt. Die Zahl macht sichtbar, wie viele laufende Fälle zugewiesen sind. Sie ist eine Orientierung über die Anzahl, weil ein schwieriger Fall mehr Zeit beanspruchen kann als mehrere kurze Anfragen.
+
+## 5.4 SQL-Anbindung und Code First – Babak Najafpoursarabi
+Ich habe den ServiceDeskContext in Program.cs für Dependency Injection registriert. Dort wird auch der SQL-Server-Provider mit dem Verbindungsstring DeskData eingerichtet. Die Fachcontroller bekommen den Kontext im Konstruktor zur Verfügung gestellt. Beim Start ruft die Anwendung Database.Migrate auf. Anschließend sorgt der DatabaseSeeder für Beispieldaten. Er ergänzt fehlende Beispieldatensätze für Personen und Kategorien und legt die Beispieltickets an, wenn die Ticket-Tabelle leer ist. Dadurch lässt sich der typische Ablauf nach dem Start mit einer frischen Datenbank anschaulich zeigen.
+
+# 5 Implementierungsphase  Fortsetzung
+## 5.5 Migrationen und gemeinsamer Ablauf
+Die erste Migration legte Tickets und Mitarbeiter mit einer optionalen Zuweisung an. Eine zweite Migration ergänzte den Namen der meldenden Person und das Erstellungsdatum. In der dritten Migration wurde aus der festen Kategorie eine eigene Tabelle. Die Tickets erhielten dafür eine optionale KategorieId mit Index und Fremdschlüssel. Vorhandene Werte aus der alten Kategorie-Spalte werden in dieser Migration nicht in die neue Tabelle übertragen. Für eine Übernahme bestehender Produktivdaten wäre daher eine ausdrückliche Zuordnung erforderlich.
+
+Für das Zusammenspiel der drei Bereiche lässt sich gut ein Druckerproblem als Beispiel nehmen. Zuerst erfasst jemand im Mitarbeiterbereich „Drucker im zweiten Stock ohne Verbindung“. Im Support erscheint die Meldung gemeinsam mit den übrigen Tickets. Dort kann sie etwa an eine Person aus dem Adminbereich weitergegeben, höher priorisiert und in Bearbeitung genommen werden. Meldet der Support das Ticket als abgeschlossen, sieht die meldende Person den geänderten Status in der Ticketübersicht. Der Beispielablauf beschreibt den vorgesehenen Bedienweg. Er dient zugleich als Grundlage für die Funktionsprüfung.
+
+## 5.6 Gemeinsames Layout und Startseite
+Beim Zusammenführen haben wir die Navigation im gemeinsamen Razor-Layout gebündelt. Die Startseite führt in die Anwendung ein. Der Menüpunkt Mitarbeiter öffnet die Ticketübersicht, Support führt zur Arbeitsliste und der Adminbereich zur Stammdatenpflege. In einer früheren Version war die Ticketansicht unter Home abgelegt. Durch die Zuordnung zum TicketController lässt sich beim Lesen des Codes leichter nachvollziehen, welche Seite für die Erfassung zuständig ist. Die gemeinsame Navigation und das Westfalen-Logo verbinden die Seiten optisch.
+
+## 5.7 Erkenntnisse aus der Zusammenführung
+Mehrere Entscheidungen wirkten sich auf alle drei Teile aus. Die Umstellung auf eine verwaltbare Kategorie hat beispielsweise das Datenbankschema, die Ticketformulare und den Adminbereich verändert. Dass der Support die Daten sofort aus derselben Tabelle bezieht, ist praktisch. Es bedeutet aber auch, dass eine Änderung an den Stammdaten an anderer Stelle sichtbar wird. Am Löschfall haben wir gesehen, wie wichtig die gemeinsame Abstimmung ist. Eine Schaltfläche im Adminbereich betrifft unter Umständen einen laufenden Fall im Support.
+
+Ein weiterer Unterschied wurde an abgeschlossenen Tickets deutlich. Die Schaltflächen können den vorgesehenen Ablauf verständlich machen. Ob eine Änderung fachlich erlaubt ist, entscheidet letztlich die Verarbeitung auf dem Server. An dieser Stelle hat unser Stand eine konkrete Lücke. In Kapitel 8 führen wir deshalb die vorhandene Bedienführung und die fehlende Prüfung im Controller als zwei Teile derselben Anforderung auf.
+
+# 6 Testphase und Qualitätskontrolle
+Am 20.11.2026 wurde der Stand e53a7d7 mit dotnet build Service-Desk.slnx --no-restore gebaut. Das Ergebnis waren 0 Fehler und 0 Warnungen. Der anschließende Startversuch mit separater Testdatenbank scheiterte bereits bei der Migration. SQL Server LocalDB meldete Fehler 50, weil die automatische Instanz nicht erstellt werden konnte. Damit war in dieser Umgebung kein Browserlauf möglich. Die folgenden Testfälle sind zur Ausführung vorbereitet. Die Ist-Spalte enthält den Ausführungsstand und bei relevanten Fällen zusätzlich den Codebefund.
+
+@table 0.4 1.1 1.2 1.15
+Test|Eingabe oder Schritt|Erwartetes Ergebnis|Ist am 20.11.
+T01|Gültiges Druckerticket mit Kategorie anlegen.|Ticket erscheint als Offen mit Datum in Liste und Details.|Blockiert durch LocalDB.
+T02|Name, Titel und Nachricht leeren. Formular absenden.|Pflichtfeldmeldungen erscheinen. Kein Ticket entsteht.|Blockiert. Modellattribute und Meldungsfelder vorhanden.
+T03|Kategorie bewusst leer lassen.|Im Projektstand wird ein Ticket ohne Kategorie gespeichert.|Blockiert. KategorieId ist optional.
+T04|Status Offen und Priorität Hoch im Support filtern.|Es erscheinen nur passende Fälle.|Blockiert durch LocalDB.
+T05|Ticket einem IT-Mitarbeiter zuweisen, Status ändern und neu aufrufen.|Zuständigkeit und neuer Status bleiben gespeichert.|Blockiert durch LocalDB.
+T06|Testticket im Support löschen und bestätigen.|Ticket verschwindet aus beiden Übersichten.|Blockiert durch LocalDB.
+T07|Abgeschlossenes Ticket bearbeiten, auch über seine gespeicherte Bearbeitungsadresse.|Bearbeitung erst nach dem Wiederöffnen zugänglich.|Blockiert. Im Code fehlt die Statusprüfung in Edit.
+T08|Abgeschlossenes Ticket im Support wieder öffnen.|Status wird Offen. Bearbeiten ist wieder auswählbar.|Blockiert. Reopen setzt Offen.
+T09|IT-Person und Kategorie anlegen, anzeigen, umbenennen und unbenutzt löschen.|Änderungen sind nach Rückkehr im Adminbereich sichtbar.|Blockiert durch LocalDB.
+T10|Eine Kategorie mit zugeordnetem Testticket löschen.|Ticket bleibt bestehen und hat keine Kategorie mehr.|Blockiert. Controller hebt die Zuordnung auf.
+T11|Eine IT-Person mit zugewiesenem Testticket löschen.|Verständliche Ablehnung oder Aufhebung der Zuweisung. Ticket bleibt erhalten.|Blockiert. Codebefund: Fremdschlüsselkonflikt möglich.
+@end
+
+In einer früheren Projektnotiz ist für das Löschen einer zugewiesenen Person bereits ein SQL-Fremdschlüsselkonflikt protokolliert. Ob die anderen Prüfschritte im aktuellen Build wie vorgesehen ablaufen, bleibt bis zum Browserlauf offen. Nach Bereitstellung einer erreichbaren Instanz kann das Team die Fälle in derselben Reihenfolge ausführen und das sichtbare Ergebnis in der Ist-Spalte festhalten.
+
+# 7 Dokumentation
+Die Startanleitung im Anhang richtet sich an Personen, die die Anwendung lokal einrichten. Der Bedienablauf im selben Anhang fasst zusammen, wie eine Meldung im Mitarbeiterbereich entsteht und im Support übernommen wird. Unsere technischen Entscheidungen, Testfälle und offenen Punkte haben wir in dieser Projektdokumentation zusammengeführt.
+
+## 8 Fazit
+## 8.1 Soll-Ist-Vergleich
+@table 0.82 1.35 1.55
+Anforderung|Aktueller Stand im Code|Bewertung am Dokumentationsstand
+A1 bis A3|Mitarbeiterpflege, Ticketfunktionen und optionale Zuweisung sind vorhanden.|Erkennbar implementiert. Browserprüfung ausstehend.
+A4 bis A6|Kategorien als Entität, drei Status und Prioritäten, kombinierbare Supportfilter.|Erkennbar implementiert. Kategorieauswahl bleibt optional.
+A7|Wiederöffnen ist verfügbar. Der Support zeigt weiterhin Bearbeiten an und Edit prüft den Status nicht.|Teilweise umgesetzt. Schaltfläche und Controller müssen angepasst werden.
+A8|Pflichtfeldregeln und Validierungsanzeigen für die Formulare sind vorhanden.|Erkennbar implementiert. Meldungen im Browser prüfen.
+A9|Kategoriezuordnung wird gelöst. IT-Personen werden ohne vorherige Behandlung ihrer Tickets gelöscht.|Für Kategorien nachvollziehbar umgesetzt. IT-Mitarbeiter-Löschfall offen.
+Technik|MVC und EF Core, drei Entitäten, zwei 1:n-Beziehungen, Code-First-Migrationen.|Build erfolgreich. Live-Abnahme hängt am Datenbankstart.
+@end
+
+## 8.2 Erfahrungen und Teamreflexion
+Die Arbeitsteilung hat dort gut funktioniert, wo wir die Übergänge früh abgestimmt haben. Ein Ticket aus Jens’ Formular muss in Daniels Supportübersicht erscheinen. Eine von Babak angelegte Kategorie muss in beiden Formularen verfügbar sein. Ein gemeinsamer Prüflauf vom Anlegen bis zum Abschluss hätte diese Übergänge früher abgedeckt.
+
+Beim Wiederöffnen haben wir gelernt, dass eine Schaltfläche den Ablauf erklären kann und der Controller die fachliche Regel durchsetzen muss. Der Löschfall zeigt, warum Datenbeziehungen auch bei Änderungen und beim Löschen berücksichtigt werden müssen.
+
+## 8.3 Ausblick
+Zuerst stehen die Blackboxtests auf einer erreichbaren SQL-Instanz an. Am Ticketablauf bleiben die Bearbeitungssperre, die Löschregel für zugewiesene IT-Mitarbeiter und die falsche Wiederöffnen-Schaltfläche im Mitarbeiterbereich offen. Eine Änderungshistorie und Benachrichtigungen könnten später Statuswechsel und Rückmeldungen nachvollziehbar machen.
