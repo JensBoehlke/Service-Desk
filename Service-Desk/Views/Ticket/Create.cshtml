@@ -48,17 +48,15 @@
 
             
             <div class="form-group">
-                <input type="submit" value="Speichern" class="btn btn-primary mt-2" />
+                <input type="submit" value="Speichern" class="btn btn-primary mt-2 mb-2" />
             </div>
         </form>
     </div>
 </div>
 
-<br />
-
 <div>
     @* Zurück zur Ticketliste, zu der auch nach dem Speichern weitergeleitet wird. *@
-    <a asp-controller="Ticket" asp-action="Index">Zurück zur Ticketübersicht</a>
+    <a asp-controller="Ticket" asp-action="Index" class="btn btn-outline-secondary">Zurück zur Ticketübersicht</a>
 </div>
 
 @section Scripts {
